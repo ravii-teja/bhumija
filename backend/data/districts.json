@@ -1,0 +1,258 @@
+[
+  {
+    "id": "aurangabad_mh",
+    "name": "Aurangabad (Chhatrapati Sambhajinagar)",
+    "state": "Maharashtra",
+    "region": "Marathwada",
+    "lat": 19.8762,
+    "lon": 75.3433,
+    "risk_level": "High",
+    "soil_type": "Black Cotton Soil (Regur)",
+    "primary_crops": ["Cotton", "Soybean", "Pigeon Pea (Tur)", "Bajra"],
+    "mitigation_advisories": {
+      "crop_switching": "Switch from long-duration cotton to short-duration pulses (mung/urad) or pearl millet (bajra).",
+      "moisture_conservation": "Implement broad bed furrow (BBF) sowing and apply straw mulching to conserve residual soil moisture.",
+      "water_harvesting": "Construct farm ponds (Shettale) and recharge existing open wells to capture sudden intense rain spells."
+    }
+  },
+  {
+    "id": "beed_mh",
+    "name": "Beed",
+    "state": "Maharashtra",
+    "region": "Marathwada",
+    "lat": 18.9891,
+    "lon": 75.7601,
+    "risk_level": "High",
+    "soil_type": "Shallow Black Soil",
+    "primary_crops": ["Soybean", "Cotton", "Pigeon Pea", "Sorghum (Jowar)"],
+    "mitigation_advisories": {
+      "crop_switching": "Replace water-intensive crops with drought-tolerant Sorghum (Jowar) or Horse Gram.",
+      "moisture_conservation": "Intercrop Soybean with Pigeon Pea (4:2 ratio) to reduce risk of total crop failure.",
+      "water_harvesting": "Create contour trenches along slopes to slow down runoff and increase groundwater recharge."
+    }
+  },
+  {
+    "id": "latur_mh",
+    "name": "Latur",
+    "state": "Maharashtra",
+    "region": "Marathwada",
+    "lat": 18.4088,
+    "lon": 76.5630,
+    "risk_level": "High",
+    "soil_type": "Medium to Deep Black Soil",
+    "primary_crops": ["Soybean", "Pigeon Pea", "Sugarcane", "Gram"],
+    "mitigation_advisories": {
+      "crop_switching": "Strictly avoid new sugarcane sowing; shift to short-duration pulses or oilseeds like Sunflower.",
+      "moisture_conservation": "Use micro-irrigation (drip/sprinkler) for existing orchards and cash crops.",
+      "water_harvesting": "De-silt local community tanks and check dams before monsoon onset to increase storage capacity."
+    }
+  },
+  {
+    "id": "yavatmal_mh",
+    "name": "Yavatmal",
+    "state": "Maharashtra",
+    "region": "Vidarbha",
+    "lat": 20.3888,
+    "lon": 78.1204,
+    "risk_level": "High",
+    "soil_type": "Medium Black Cotton Soil",
+    "primary_crops": ["Cotton", "Soybean", "Pigeon Pea", "Wheat"],
+    "mitigation_advisories": {
+      "crop_switching": "Promote early-maturing cotton varieties or intercrop cotton with green gram.",
+      "moisture_conservation": "Apply organic mulching and use hydrogels in the root zone to sustain moisture during dry spells.",
+      "water_harvesting": "Establish community farm ponds and enforce strict regulation on groundwater extraction."
+    }
+  },
+  {
+    "id": "akola_mh",
+    "name": "Akola",
+    "state": "Maharashtra",
+    "region": "Vidarbha",
+    "lat": 20.7002,
+    "lon": 77.0082,
+    "risk_level": "Medium",
+    "soil_type": "Deep Black Soil",
+    "primary_crops": ["Cotton", "Soybean", "Sorghum", "Gram"],
+    "mitigation_advisories": {
+      "crop_switching": "Adopt drought-resistant sorghum varieties (e.g., CSH-14 or CSV-15) instead of cotton on shallow soils.",
+      "moisture_conservation": "Adopt conservation tillage and leave crop residues on the soil surface.",
+      "water_harvesting": "Construct check dams on local streams to raise water tables."
+    }
+  },
+  {
+    "id": "anantapur_ap",
+    "name": "Anantapur",
+    "state": "Andhra Pradesh",
+    "region": "Rayalaseema",
+    "lat": 14.6819,
+    "lon": 77.6006,
+    "risk_level": "High",
+    "soil_type": "Red Sandy Loam",
+    "primary_crops": ["Groundnut", "Pigeon Pea", "Castor", "Millets"],
+    "mitigation_advisories": {
+      "crop_switching": "Switch from groundnut to drought-hardy Foxtail Millet (Korra) or Pearl Millet (Sajja).",
+      "moisture_conservation": "Apply protective irrigation using farm ponds during critical flowering stages of groundnut.",
+      "water_harvesting": "Implement extensive rainwater harvesting structures like continuous contour trenches (CCT) and farm ponds."
+    }
+  },
+  {
+    "id": "kurnool_ap",
+    "name": "Kurnool",
+    "state": "Andhra Pradesh",
+    "region": "Rayalaseema",
+    "lat": 15.8281,
+    "lon": 78.0373,
+    "risk_level": "High",
+    "soil_type": "Mixed Red and Black Soil",
+    "primary_crops": ["Cotton", "Groundnut", "Pigeon Pea", "Sorghum"],
+    "mitigation_advisories": {
+      "crop_switching": "Encourage intercropping of Groundnut + Pigeon Pea (7:1 or 11:1) to mitigate weather risk.",
+      "moisture_conservation": "Use dead furrows at 3.6-meter intervals to conserve in-situ moisture.",
+      "water_harvesting": "Construct check dams and farm ponds to recharge shallow aquifers."
+    }
+  },
+  {
+    "id": "kadapa_ap",
+    "name": "Kadapa (YSR District)",
+    "state": "Andhra Pradesh",
+    "region": "Rayalaseema",
+    "lat": 14.4673,
+    "lon": 78.8242,
+    "risk_level": "Medium",
+    "soil_type": "Red Sandy and Clayey Soils",
+    "primary_crops": ["Groundnut", "Sunflower", "Cotton", "Bengal Gram"],
+    "mitigation_advisories": {
+      "crop_switching": "Shift to short-duration Sunflower or Sesame if monsoon is delayed beyond July.",
+      "moisture_conservation": "Practice deep summer ploughing to destroy pests and improve soil water-holding capacity.",
+      "water_harvesting": "Recharge borewells using filter pits to secure water for critical crop growth stages."
+    }
+  },
+  {
+    "id": "vijayapura_ka",
+    "name": "Vijayapura (Bijapur)",
+    "state": "Karnataka",
+    "region": "North Interior Karnataka",
+    "lat": 16.8302,
+    "lon": 75.7100,
+    "risk_level": "High",
+    "soil_type": "Shallow to Deep Black Soil",
+    "primary_crops": ["Sorghum", "Bajra", "Pigeon Pea", "Chickpea"],
+    "mitigation_advisories": {
+      "crop_switching": "Sow drought-tolerant Pearl Millet (Bajra) or Finger Millet (Ragi) instead of water-intensive crops.",
+      "moisture_conservation": "Implement compartmental bunding to hold rainwater where it falls.",
+      "water_harvesting": "Construct farm ponds with plastic lining to prevent seepage in sandy-clay areas."
+    }
+  },
+  {
+    "id": "raichur_ka",
+    "name": "Raichur",
+    "state": "Karnataka",
+    "region": "North Interior Karnataka",
+    "lat": 16.2120,
+    "lon": 77.3555,
+    "risk_level": "High",
+    "soil_type": "Black and Red Sandy Soils",
+    "primary_crops": ["Cotton", "Paddy", "Groundnut", "Pulses"],
+    "mitigation_advisories": {
+      "crop_switching": "Avoid direct-seeded paddy if canal water is delayed; switch to light dry crops like Foxtail Millet.",
+      "moisture_conservation": "Adopt drip irrigation for cotton to save up to 40% water.",
+      "water_harvesting": "Desilt and deepen community check dams to maximize storage from sudden monsoonal cloudbursts."
+    }
+  },
+  {
+    "id": "jodhpur_rj",
+    "name": "Jodhpur",
+    "state": "Rajasthan",
+    "region": "Western Rajasthan",
+    "lat": 26.2389,
+    "lon": 73.0243,
+    "risk_level": "High",
+    "soil_type": "Desert Sandy Soil",
+    "primary_crops": ["Bajra (Pearl Millet)", "Guar (Cluster Bean)", "Moth Bean", "Sesame"],
+    "mitigation_advisories": {
+      "crop_switching": "Exclusively grow extremely drought-tolerant Moth Bean, Cluster Bean, or local Bajra varieties.",
+      "moisture_conservation": "Use plastic mulching and drip irrigation to minimize evaporation in desert heat.",
+      "water_harvesting": "Utilize traditional rainwater harvesting structures like 'Taankas' and 'Kundis' for farm-level storage."
+    }
+  },
+  {
+    "id": "barmer_rj",
+    "name": "Barmer",
+    "state": "Rajasthan",
+    "region": "Western Rajasthan",
+    "lat": 25.7532,
+    "lon": 71.4175,
+    "risk_level": "High",
+    "soil_type": "Arid Sandy Soil",
+    "primary_crops": ["Bajra", "Moth Bean", "Cluster Bean", "Castor"],
+    "mitigation_advisories": {
+      "crop_switching": "Sow ultra-short-duration moth bean or cluster bean (maturing in 60-70 days).",
+      "moisture_conservation": "Apply straw/residue mulching around crop rows to prevent soil moisture evaporation.",
+      "water_harvesting": "Construct farm-scale 'Khadins' (runoff farming systems) to capture and utilize brief flash flood waters."
+    }
+  },
+  {
+    "id": "jaisalmer_rj",
+    "name": "Jaisalmer",
+    "state": "Rajasthan",
+    "region": "Western Rajasthan",
+    "lat": 26.9157,
+    "lon": 70.9083,
+    "risk_level": "High",
+    "soil_type": "Dune Sand Soil",
+    "primary_crops": ["Bajra", "Guar", "Moth Bean"],
+    "mitigation_advisories": {
+      "crop_switching": "Shift to highly resilient grasses (like Dhaman grass) or agroforestry (Khejri trees) if rains fail completely.",
+      "moisture_conservation": "Adopt windbreaks or shelterbelts of trees to reduce hot wind velocity and soil moisture loss.",
+      "water_harvesting": "Maintain and expand traditional 'Khadin' systems to secure single-crop Rabi cultivation on stored moisture."
+    }
+  },
+  {
+    "id": "jhansi_up",
+    "name": "Jhansi",
+    "state": "Uttar Pradesh",
+    "region": "Bundelkhand",
+    "lat": 25.4484,
+    "lon": 78.5685,
+    "risk_level": "High",
+    "soil_type": "Mixed Red and Black Soil (Kabar/Mar)",
+    "primary_crops": ["Black Gram (Urad)", "Sesame", "Wheat", "Mustard"],
+    "mitigation_advisories": {
+      "crop_switching": "Sow short-duration black gram (urad) or sesame instead of water-intensive paddy or long-duration crops.",
+      "moisture_conservation": "Implement ridge-and-furrow method of sowing to conserve moisture in black clay soils.",
+      "water_harvesting": "Construct field bunds and farm ponds to retain rainwater and prevent soil erosion during cloudbursts."
+    }
+  },
+  {
+    "id": "banda_up",
+    "name": "Banda",
+    "state": "Uttar Pradesh",
+    "region": "Bundelkhand",
+    "lat": 25.4754,
+    "lon": 80.3367,
+    "risk_level": "High",
+    "soil_type": "Red Sandy Soil (Rakar)",
+    "primary_crops": ["Pigeon Pea", "Sorghum", "Chickpea", "Lentil"],
+    "mitigation_advisories": {
+      "crop_switching": "Switch to drought-tolerant pulses like Pigeon Pea (Tur) or Lentils which thrive on residual moisture.",
+      "moisture_conservation": "Apply organic mulch and practice zero-tillage to preserve soil structure and moisture.",
+      "water_harvesting": "Build check dams on local gullies to slow down flash floods and recharge groundwater."
+    }
+  },
+  {
+    "id": "tikamgarh_mp",
+    "name": "Tikamgarh",
+    "state": "Madhya Pradesh",
+    "region": "Bundelkhand",
+    "lat": 24.7447,
+    "lon": 78.8311,
+    "risk_level": "High",
+    "soil_type": "Red and Yellow Soils",
+    "primary_crops": ["Soybean", "Black Gram", "Wheat", "Gram"],
+    "mitigation_advisories": {
+      "crop_switching": "Adopt short-duration Soybean (e.g., JS 95-60) or Black Gram to escape late-season drought.",
+      "moisture_conservation": "Follow line sowing with proper spacing to reduce crop density and moisture competition.",
+      "water_harvesting": "Recharge traditional Bundela tanks and construct farm ponds to secure protective irrigation."
+    }
+  }
+]
