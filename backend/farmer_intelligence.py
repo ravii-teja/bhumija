@@ -23,8 +23,15 @@ SUPPORTED_LANGUAGES = {
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 DISTRICTS_FILE = os.path.join(DATA_DIR, "districts.json")
 RSK_FILE = os.path.join(DATA_DIR, "rythu_seva_kendras.json")
-HEALTH_LOGS_FILE = os.path.join(DATA_DIR, "health_logs.json")
-SMS_SUBSCRIBERS_FILE = os.path.join(DATA_DIR, "sms_subscribers.json")
+
+# Use /tmp on Vercel or read-only environments where package dir is read-only
+if os.getenv("VERCEL") or not os.access(DATA_DIR, os.W_OK):
+    HEALTH_LOGS_FILE = "/tmp/health_logs.json"
+    SMS_SUBSCRIBERS_FILE = "/tmp/sms_subscribers.json"
+else:
+    HEALTH_LOGS_FILE = os.path.join(DATA_DIR, "health_logs.json")
+    SMS_SUBSCRIBERS_FILE = os.path.join(DATA_DIR, "sms_subscribers.json")
+
 
 # Drought-resilient crop knowledge base keyed by region pattern
 CROP_KNOWLEDGE = {
@@ -70,11 +77,19 @@ CROP_KNOWLEDGE = {
 
 
 def _load_json(path: str, default: Any) -> Any:
+    # If path starts with /tmp and doesn't exist yet, check the packaged fallback in DATA_DIR
+    resolved_path = path
+    if not os.path.exists(path) and path.startswith("/tmp/"):
+        fallback = os.path.join(DATA_DIR, os.path.basename(path))
+        if os.path.exists(fallback):
+            resolved_path = fallback
+
     try:
-        with open(path, "r", encoding="utf-8") as handle:
+        with open(resolved_path, "r", encoding="utf-8") as handle:
             return json.load(handle)
     except (FileNotFoundError, json.JSONDecodeError):
         return default
+
 
 
 def _save_json(path: str, data: Any) -> None:
