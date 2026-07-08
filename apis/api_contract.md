@@ -91,3 +91,99 @@ Accepts a user query, location coordinates, and an optional image upload (soil/c
     }
   }
   ```
+
+---
+
+### 4. Agromonitoring Farm Insights
+Returns satellite-derived NDVI, soil moisture, agro weather, and monsoon rainfall context for a farm location.
+
+- **URL:** `/api/agro/insights`
+- **Method:** `GET`
+- **Query Parameters:**
+  - `lat` (float, required)
+  - `lon` (float, required)
+- **Response Code:** `200 OK`
+
+---
+
+### 5. Agromonitoring District Map Overlay
+Returns per-district agro metrics for coloring map overlays (monsoon rain, soil/water stress).
+
+- **URL:** `/api/agro/district-overlay`
+- **Method:** `GET`
+- **Response Code:** `200 OK`
+
+---
+
+## Farmer Intelligence Platform (Indic Voice & SMS)
+
+Supported languages: `en`, `hi`, `te`, `mr`, `kn` (via `lang` query/form parameter).
+
+### 6. Smart Crop Recommendation
+Satellite NDVI, soil moisture, monsoon rainfall, and district soil profile.
+
+- **URL:** `/api/farmer/crop-recommend`
+- **Method:** `GET`
+- **Query Parameters:** `lat`, `lon`, `lang` (optional, default `en`)
+
+### 7. Real-Time Alerts & Irrigation Guidance
+Dry-spell alerts, simulated ground sensor readings, irrigation and fertilization guidance.
+
+- **URL:** `/api/farmer/alerts`
+- **Method:** `GET`
+- **Query Parameters:** `lat`, `lon`, `lang`
+
+### 8. Crop Health Log (Photo / Voice)
+AI diagnosis with Rythu Seva Kendra referral ID for expert follow-up.
+
+- **URL:** `/api/farmer/health-log`
+- **Method:** `POST`
+- **Content-Type:** `multipart/form-data`
+- **Form Data:** `lat`, `lon`, `notes`, `lang`, `input_type` (`text`|`voice`|`photo`), optional `image`
+
+### 9. List Health Logs
+- **URL:** `/api/farmer/health-logs`
+- **Method:** `GET`
+- **Query Parameters:** `limit` (default 10)
+
+### 10. SMS Subscribe (Holistic Dry-Spell Alerts)
+Twilio delivery of a **single-segment** holistic advisory (≤160 chars, GSM-safe). Gathers location, rainfall, soil, best crop, weekly hint, and RSK phone.
+
+- **URL:** `/api/farmer/sms-subscribe`
+- **Method:** `POST`
+- **Form Data:** `phone`, `lat`, `lon`, `lang`, `place_name` (optional — searched city name from frontend)
+- **Response fields:** `subscribed`, `sample_sms`, `holistic_summary`, `delivery`, `message_sid`, `twilio_configured`
+
+### 11. Voice Advisory
+Process voice transcript in Indic languages; returns spoken advisory text.
+
+- **URL:** `/api/farmer/voice-advisory`
+- **Method:** `POST`
+- **Form Data:** `text`, `lat`, `lon`, `lang`
+
+---
+
+### 12. Place Search (MapMyIndia + Geocoding)
+Search any city, village, or advisory district. MapMyIndia autosuggest with Mappls/Open-Meteo geocoding fallback.
+
+- **URL:** `/api/search`
+- **Method:** `GET`
+- **Query Parameters:**
+  - `q` (string, required): Search query (e.g. `Pune`)
+  - `lat`, `lon` (float, optional): Bias autosuggest to map center
+- **Response Code:** `200 OK`
+- **Response Body (JSON array):**
+  ```json
+  [
+    {
+      "name": "Pune",
+      "address": "Pune, Maharashtra, India",
+      "lat": 18.5196,
+      "lon": 73.8554,
+      "district_id": "pune_mh",
+      "district_name": "Pune",
+      "approximate_district": true,
+      "source": "open_meteo_geocode"
+    }
+  ]
+  ```

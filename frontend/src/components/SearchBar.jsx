@@ -2,6 +2,14 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Search, MapPin, Loader2 } from 'lucide-react';
 import { findDistrictByCoords } from '../utils/mappls';
 
+function resolveDistrict(districts, result) {
+  if (result.district_id) {
+    const exact = districts.find((d) => d.id === result.district_id);
+    if (exact) return exact;
+  }
+  return findDistrictByCoords(districts, result.lat, result.lon);
+}
+
 export default function SearchBar({ districts, onSelectLocation, selectedLocation }) {
   const [query, setQuery] = useState('');
   const [suggestions, setSuggestions] = useState([]);
@@ -30,16 +38,17 @@ export default function SearchBar({ districts, onSelectLocation, selectedLocatio
             district.state.toLowerCase().includes(query.toLowerCase()) ||
             district.region.toLowerCase().includes(query.toLowerCase())
         )
-        .slice(0, 4)
+        .slice(0, 3)
         .map((district) => ({
           id: district.id,
           name: district.name,
-          subtitle: `${district.region}, ${district.state}`,
+          subtitle: `${district.region}, ${district.state} · El Niño advisory zone`,
           lat: district.lat,
           lon: district.lon,
           district,
-          source: 'district',
+          source: 'advisory_zone',
           risk_level: district.risk_level,
+          isCity: false,
         }));
 
       try {
@@ -54,26 +63,36 @@ export default function SearchBar({ districts, onSelectLocation, selectedLocatio
 
         if (response.ok) {
           const data = await response.json();
-          remoteMatches = (data.results || []).map((result, index) => ({
-            id: `mappls-${index}-${result.lat}-${result.lon}`,
-            name: result.name,
-            subtitle: result.address,
-            lat: result.lat,
-            lon: result.lon,
-            district:
-              districts.find((d) => d.id === result.district_id) ||
-              findDistrictByCoords(districts, result.lat, result.lon),
-            source: 'mapmyindia',
-          }));
+          remoteMatches = (data.results || []).map((result, index) => {
+            const district = resolveDistrict(districts, result);
+            let subtitle = result.address || result.name;
+            if (result.approximate_district && result.district_name) {
+              subtitle = `${subtitle} · Near ${result.district_name}`;
+            } else if (district && !result.approximate_district) {
+              subtitle = `${subtitle} · ${district.region}`;
+            }
+
+            return {
+              id: `mappls-${index}-${result.lat}-${result.lon}`,
+              name: result.name,
+              subtitle,
+              lat: result.lat,
+              lon: result.lon,
+              district,
+              source: result.source || 'mapmyindia',
+              isCity: true,
+            };
+          });
         }
 
-        const merged = [...localMatches];
-        remoteMatches.forEach((remote) => {
+        // Cities/places first; curated advisory zones after (no duplicates)
+        const merged = [...remoteMatches];
+        localMatches.forEach((local) => {
           const duplicate = merged.some(
             (item) =>
-              Math.abs(item.lat - remote.lat) < 0.05 && Math.abs(item.lon - remote.lon) < 0.05
+              Math.abs(item.lat - local.lat) < 0.08 && Math.abs(item.lon - local.lon) < 0.08
           );
-          if (!duplicate) merged.push(remote);
+          if (!duplicate) merged.push(local);
         });
 
         setSuggestions(merged.slice(0, 8));
@@ -91,7 +110,10 @@ export default function SearchBar({ districts, onSelectLocation, selectedLocatio
   }, [query, districts, selectedLocation]);
 
   const handleSelect = (item) => {
-    onSelectLocation(item.lat, item.lon, item.district || null);
+    onSelectLocation(item.lat, item.lon, item.district || null, {
+      name: item.name,
+      address: item.subtitle,
+    });
     setQuery(item.name);
     setSuggestions([]);
     setIsFocused(false);
@@ -108,17 +130,19 @@ export default function SearchBar({ districts, onSelectLocation, selectedLocatio
     <div className="relative z-30 w-full">
       <form
         onSubmit={handleSubmit}
-        className="relative flex items-center rounded-full border border-stone-200 bg-white px-4 py-3 shadow-sm transition-all duration-200 focus-within:border-brand-500 focus-within:shadow-md"
+        className="relative flex min-h-[48px] items-center rounded-[28px] border border-stone-200/80 bg-white px-4 py-2 shadow-[0_2px_12px_rgba(0,0,0,0.12)] transition-shadow focus-within:border-brand-400 focus-within:shadow-[0_4px_20px_rgba(234,88,12,0.15)]"
       >
-        <Search className="mr-3 h-5 w-5 flex-shrink-0 text-stone-400" />
+        <Search className="mr-2.5 h-5 w-5 flex-shrink-0 text-stone-400" />
         <input
-          type="text"
+          type="search"
+          enterKeyHint="search"
+          autoComplete="off"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setTimeout(() => setIsFocused(false), 200)}
-          placeholder="Search location in India (MapMyIndia powered)..."
-          className="w-full bg-transparent text-sm font-medium text-stone-800 placeholder-stone-400 focus:outline-none md:text-base"
+          placeholder="Search any city or village…"
+          className="w-full bg-transparent text-base font-medium text-stone-800 placeholder-stone-400 focus:outline-none md:text-sm"
         />
         {loading && <Loader2 className="h-4 w-4 animate-spin text-brand-600" />}
         {query && !loading && (
@@ -136,13 +160,13 @@ export default function SearchBar({ districts, onSelectLocation, selectedLocatio
       </form>
 
       {isFocused && suggestions.length > 0 && (
-        <div className="absolute left-0 right-0 top-full z-40 mt-2 max-h-72 overflow-y-auto rounded-2xl border border-stone-200 bg-white shadow-xl divide-y divide-stone-100">
+        <div className="absolute left-0 right-0 top-[calc(100%+0.5rem)] z-50 max-h-[min(50dvh,320px)] overflow-y-auto rounded-[20px] border border-stone-200 bg-white shadow-[0_8px_32px_rgba(0,0,0,0.12)] divide-y divide-stone-100">
           {suggestions.map((item) => (
             <button
               key={item.id}
               type="button"
               onClick={() => handleSelect(item)}
-              className="flex w-full items-center justify-between px-4 py-3 text-left transition-colors hover:bg-stone-50"
+              className="flex min-h-[52px] w-full items-center justify-between px-4 py-3 text-left transition-colors active:bg-stone-100"
             >
               <div className="flex min-w-0 items-center gap-3">
                 <MapPin className="h-4 w-4 flex-shrink-0 text-brand-500" />
@@ -152,7 +176,11 @@ export default function SearchBar({ districts, onSelectLocation, selectedLocatio
                 </div>
               </div>
               <div className="ml-3 flex-shrink-0">
-                {item.risk_level ? (
+                {item.isCity ? (
+                  <span className="rounded-full border border-blue-100 bg-blue-50 px-2 py-0.5 text-[10px] font-bold text-blue-700">
+                    City
+                  </span>
+                ) : item.risk_level ? (
                   <span
                     className={`rounded-full border px-2 py-0.5 text-[10px] font-bold ${
                       item.risk_level === 'High'
@@ -160,13 +188,9 @@ export default function SearchBar({ districts, onSelectLocation, selectedLocatio
                         : 'border-orange-100 bg-orange-50 text-brand-700'
                     }`}
                   >
-                    {item.risk_level} Risk
+                    Advisory · {item.risk_level}
                   </span>
-                ) : (
-                  <span className="rounded-full border border-stone-200 bg-stone-50 px-2 py-0.5 text-[10px] font-bold text-stone-500">
-                    MapMyIndia
-                  </span>
-                )}
+                ) : null}
               </div>
             </button>
           ))}

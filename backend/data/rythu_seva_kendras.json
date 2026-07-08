@@ -1,0 +1,101 @@
+[
+  {
+    "id": "rsk_aurangabad",
+    "name": "Rythu Seva Kendra — Aurangabad",
+    "district_id": "aurangabad_mh",
+    "state": "Maharashtra",
+    "address": "Krishi Bhavan, Aurangabad, Maharashtra 431001",
+    "phone": "+91-240-2334567",
+    "lat": 19.8762,
+    "lon": 75.3433,
+    "services": ["Crop diagnosis", "Soil testing", "Subsidy guidance", "Expert consultation"]
+  },
+  {
+    "id": "rsk_beed",
+    "name": "Rythu Seva Kendra — Beed",
+    "district_id": "beed_mh",
+    "state": "Maharashtra",
+    "address": "District Agriculture Office, Beed, Maharashtra 431122",
+    "phone": "+91-2442-256789",
+    "lat": 18.9891,
+    "lon": 75.7601,
+    "services": ["Crop diagnosis", "Drought advisory", "Seed distribution"]
+  },
+  {
+    "id": "rsk_latur",
+    "name": "Rythu Seva Kendra — Latur",
+    "district_id": "latur_mh",
+    "state": "Maharashtra",
+    "address": "Agriculture Complex, Latur, Maharashtra 413512",
+    "phone": "+91-2382-245678",
+    "lat": 18.4088,
+    "lon": 76.5630,
+    "services": ["Irrigation planning", "Crop health clinic", "Market linkage"]
+  },
+  {
+    "id": "rsk_yavatmal",
+    "name": "Rythu Seva Kendra — Yavatmal",
+    "district_id": "yavatmal_mh",
+    "state": "Maharashtra",
+    "address": "Vidarbha Krishi Kendra, Yavatmal, Maharashtra 445001",
+    "phone": "+91-7232-245123",
+    "lat": 20.3888,
+    "lon": 78.1204,
+    "services": ["Cotton advisory", "Pest management", "Soil health card"]
+  },
+  {
+    "id": "rsk_anantapur",
+    "name": "Rythu Seva Kendra — Anantapur",
+    "district_id": "anantapur_ap",
+    "state": "Andhra Pradesh",
+    "address": "RARS Campus, Anantapur, AP 515110",
+    "phone": "+91-8554-272345",
+    "lat": 14.6819,
+    "lon": 77.6006,
+    "services": ["Groundnut advisory", "Drip irrigation", "Crop insurance"]
+  },
+  {
+    "id": "rsk_kurnool",
+    "name": "Rythu Seva Kendra — Kurnool",
+    "district_id": "kurnool_ap",
+    "state": "Andhra Pradesh",
+    "address": "DA Office, Kurnool, AP 518002",
+    "phone": "+91-8518-255432",
+    "lat": 15.8281,
+    "lon": 78.0373,
+    "services": ["Rayalaseema drought cell", "Millet promotion", "Expert follow-up"]
+  },
+  {
+    "id": "rsk_raichur",
+    "name": "Rythu Seva Kendra — Raichur",
+    "district_id": "raichur_ka",
+    "state": "Karnataka",
+    "address": "Krishi Bhavan, Raichur, Karnataka 584101",
+    "phone": "+91-8532-231456",
+    "lat": 16.2120,
+    "lon": 77.3555,
+    "services": ["Water management", "Crop switching", "Field diagnosis"]
+  },
+  {
+    "id": "rsk_jodhpur",
+    "name": "Rythu Seva Kendra — Jodhpur",
+    "district_id": "jodhpur_rj",
+    "state": "Rajasthan",
+    "address": "Agriculture Department, Jodhpur, Rajasthan 342001",
+    "phone": "+91-291-2645678",
+    "lat": 26.2389,
+    "lon": 73.0243,
+    "services": ["Desert farming", "Bajra advisory", "Water harvesting"]
+  },
+  {
+    "id": "rsk_jhansi",
+    "name": "Rythu Seva Kendra — Jhansi",
+    "district_id": "jhansi_up",
+    "state": "Uttar Pradesh",
+    "address": "Krishi Vigyan Kendra, Jhansi, UP 284001",
+    "phone": "+91-517-2345678",
+    "lat": 25.4484,
+    "lon": 78.5685,
+    "services": ["Bundelkhand drought advisory", "Pulse cultivation", "Soil testing"]
+  }
+]

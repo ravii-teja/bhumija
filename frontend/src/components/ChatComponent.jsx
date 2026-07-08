@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Image as ImageIcon, X, Loader2, Sparkles, AlertCircle, HelpCircle } from 'lucide-react';
+import { Send, Image as ImageIcon, X, Loader2, Sparkles, AlertCircle } from 'lucide-react';
 
 // A simple, robust custom markdown-to-HTML formatter for clean rendering without external dependencies
 function formatMessage(text) {
@@ -32,7 +32,7 @@ function formatMessage(text) {
   return <div dangerouslySetInnerHTML={{ __html: formatted }} className="text-sm leading-relaxed text-stone-700" />;
 }
 
-export default function ChatComponent({ selectedLocation, geminiConfigured }) {
+export default function ChatComponent({ selectedLocation, geminiConfigured, embedded = false }) {
   const [messages, setMessages] = useState([
     {
       role: 'assistant',
@@ -126,34 +126,35 @@ export default function ChatComponent({ selectedLocation, geminiConfigured }) {
   };
 
   return (
-    <div className="flex flex-col h-full bg-white border border-stone-200 rounded-2xl shadow-sm overflow-hidden">
-      {/* Header */}
-      <div className="bg-brand-50 border-b border-stone-100 px-4 py-3.5 flex items-center justify-between">
-        <div className="flex items-center space-x-2.5">
-          <div className="p-1.5 bg-brand-600 rounded-xl text-white">
-            <Sparkles className="w-5 h-5" />
+    <div
+      className={`flex h-full flex-col overflow-hidden bg-white ${
+        embedded ? '' : 'rounded-2xl border border-stone-200 shadow-sm'
+      }`}
+    >
+      {!embedded && (
+        <div className="flex shrink-0 items-center justify-between border-b border-stone-100 bg-brand-50 px-4 py-3.5">
+          <div className="flex items-center space-x-2.5">
+            <div className="rounded-xl bg-brand-600 p-1.5 text-white">
+              <Sparkles className="h-5 w-5" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-stone-800">Bhumija AI Advisor</h3>
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-brand-700">
+                {geminiConfigured ? 'Gemini 2.5 Flash Active' : 'Expert Rule-Based Mode'}
+              </p>
+            </div>
           </div>
-          <div>
-            <h3 className="text-sm font-bold text-stone-800">Bhumija AI Advisor</h3>
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-brand-700">
-              {geminiConfigured ? 'Gemini 2.5 Flash Active' : 'Expert Rule-Based Mode'}
-            </p>
-          </div>
+          {selectedLocation && (
+            <div className="text-right text-xs">
+              <div className="max-w-[150px] truncate font-bold text-stone-700">
+                {selectedLocation.district ? selectedLocation.district.name : 'Custom Location'}
+              </div>
+            </div>
+          )}
         </div>
-        {selectedLocation && (
-          <div className="text-right text-xs">
-            <div className="font-bold text-stone-700 truncate max-w-[150px]">
-              {selectedLocation.district ? selectedLocation.district.name : 'Custom Location'}
-            </div>
-            <div className="text-[10px] text-stone-400">
-              Lat: {selectedLocation.lat.toFixed(2)}, Lon: {selectedLocation.lon.toFixed(2)}
-            </div>
-          </div>
-        )}
-      </div>
+      )}
 
-      {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-stone-50/50">
+      <div className="min-h-0 flex-1 space-y-4 overflow-y-auto bg-stone-50/50 p-3 md:p-4">
         {messages.map((msg, idx) => (
           <div
             key={idx}
@@ -200,8 +201,10 @@ export default function ChatComponent({ selectedLocation, geminiConfigured }) {
         <div ref={chatEndRef} />
       </div>
 
-      {/* Input Area */}
-      <div className="border-t border-stone-100 p-3 bg-white space-y-3">
+      <div
+        className="shrink-0 space-y-2 border-t border-stone-100 bg-white p-3"
+        style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}
+      >
         {/* Image Preview */}
         {imagePreview && (
           <div className="relative inline-block bg-stone-100 p-1 rounded-xl border border-stone-200">
@@ -215,7 +218,7 @@ export default function ChatComponent({ selectedLocation, geminiConfigured }) {
           </div>
         )}
 
-        <form onSubmit={handleSend} className="flex items-center space-x-2">
+        <form onSubmit={handleSend} className="flex items-center gap-2">
           <input
             type="file"
             accept="image/*"
@@ -226,39 +229,38 @@ export default function ChatComponent({ selectedLocation, geminiConfigured }) {
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className={`p-2.5 rounded-xl border border-stone-200 text-stone-500 hover:text-brand-600 hover:border-brand-200 hover:bg-brand-50 transition-all duration-150 ${imagePreview ? 'bg-brand-50 border-brand-200 text-brand-600' : ''}`}
-            title="Upload field, crop, or soil image"
+            className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-stone-200 text-stone-500 transition active:scale-95 ${
+              imagePreview ? 'border-brand-200 bg-brand-50 text-brand-600' : 'bg-white'
+            }`}
+            title="Upload field image"
           >
-            <ImageIcon className="w-5 h-5" />
+            <ImageIcon className="h-5 w-5" />
           </button>
 
           <input
             type="text"
+            enterKeyHint="send"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder={
-              selectedLocation
-                ? "Ask about crop switching, water storage..."
-                : "Select a location on the map first, then ask..."
+              selectedLocation ? 'Ask about crops, water…' : 'Select location on map first…'
             }
-            className="flex-1 bg-stone-50 border border-stone-200 rounded-xl px-4 py-2.5 text-sm font-medium text-stone-800 placeholder-stone-400 focus:outline-none focus:border-brand-500 focus:bg-white transition-all duration-150"
+            className="min-h-[48px] flex-1 rounded-full border border-stone-200 bg-stone-50 px-4 text-base font-medium text-stone-800 placeholder-stone-400 focus:border-brand-500 focus:bg-white focus:outline-none md:text-sm"
           />
 
           <button
             type="submit"
             disabled={(!input.trim() && !image) || loading}
-            className="p-2.5 bg-brand-600 hover:bg-brand-700 disabled:bg-stone-100 disabled:text-stone-400 text-white rounded-xl shadow-sm transition-all duration-150"
+            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-brand-600 text-white shadow-sm transition active:scale-95 disabled:bg-stone-200 disabled:text-stone-400"
           >
-            <Send className="w-5 h-5" />
+            <Send className="h-5 w-5" />
           </button>
         </form>
-        <div className="flex justify-between items-center text-[10px] text-stone-400 px-1">
-          <span>🌾 Free digital shield for Indian farmers</span>
-          <span className="flex items-center space-x-1">
-            <HelpCircle className="w-3 h-3" />
-            <span>Click map to set location context</span>
-          </span>
-        </div>
+        {!embedded && (
+          <div className="hidden items-center justify-between px-1 text-[10px] text-stone-400 sm:flex">
+            <span>Free digital shield for Indian farmers</span>
+          </div>
+        )}
       </div>
     </div>
   );

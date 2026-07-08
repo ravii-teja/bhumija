@@ -49,5 +49,9 @@ export function findDistrictByCoords(districts, lat, lon, threshold = 1.5) {
     }
   });
 
-  return minDist < threshold ? nearest : null;
+  if (!nearest) return null;
+  if (minDist < threshold) return nearest;
+
+  // Soft match: still show nearest vulnerable district crops/advisory when GPS is slightly outside bounds
+  return { ...nearest, approximateMatch: true };
 }

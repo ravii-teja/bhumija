@@ -33,7 +33,7 @@ export default {
         }
       },
       fontFamily: {
-        sans: ['Product Sans', 'Inter', 'system-ui', 'sans-serif'],
+        sans: ['Roboto', 'Inter', 'system-ui', 'sans-serif'],
       }
     },
   },
