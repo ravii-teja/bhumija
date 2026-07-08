@@ -6,6 +6,3 @@ BACKEND = ROOT / "backend"
 sys.path.insert(0, str(BACKEND))
 
 from main import app  # noqa: E402
-
-# Vercel Python runtime ASGI entrypoint
-handler = app
