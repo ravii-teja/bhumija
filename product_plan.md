@@ -72,119 +72,45 @@ Geospatial Data Layers:
 * Open-Meteo API: Completely free weather forecasting layer used without api keys 
   to pull live temperature, windspeed, and rain data on the fly.
 
-6. CORE PROGRAMMING LIBRARIES (PYTHON TECH STACK)
+6. CORE PROGRAMMING LIBRARIES & STACK
 --------------------------------------------------------------------------------
-Add these dependencies to your Cursor `requirements.txt`:
-* streamlit           - For building the responsive, browser-ready dashboard.
-* streamlit-folium    - A free wrapper linking interactive maps to Streamlit.
-* folium              - Generates responsive maps based on OpenStreetMap.
-* google-genai        - The official SDK to execute multimodal Gemini prompts.
-* pillow              - Handles incoming image manipulation (soil/crop uploads).
-* requests            - Executes fast API fetches to the live weather network.
+Frontend (React + Vite + Tailwind):
+* react, react-dom  - Interactive user interface components.
+* leaflet, lucide-react - Mapping layout and icon visual assets.
+* @vercel/analytics - Vercel usage stats tracker.
+* @supabase/supabase-js - Supabase client to record farmer queries and subscriptions.
 
-7. APP ARCHITECTURE & IMPLEMENTATION SCRIPT (`app.py`)
+Backend (FastAPI + Python):
+* fastapi, uvicorn   - Serverless routing API framework.
+* google-genai      - Official SDK to execute Gemini AI prompts (voice/image/chat).
+* twilio            - SMS dispatch integration.
+* pillow            - Image diagnostic support.
+* requests, certifi - Meteorological telemetry integration.
+
+7. APP ARCHITECTURE & DATA FLOW
 --------------------------------------------------------------------------------
-```python
-import streamlit as st
-import folium
-from streamlit_folium import st_folium
-from google import genai
-from PIL import Image
-import requests
+The application is structured as a decoupled React client calling a serverless FastAPI backend:
 
-st.set_page_config(page_title="Bhumija", page_icon="🌾", layout="centered")
-
-# 1. API Authentication
-api_key = st.sidebar.text_input("Enter Free Gemini API Key", type="password")
-client = genai.Client(api_key=api_key) if api_key else None
-
-if not api_key:
-    st.warning("👈 Please enter your free Gemini API key in the sidebar to activate Bhumija.")
-
-st.title("🌾 Bhumija: El Niño Resilience Engine")
-st.markdown("---")
-
-# 2. Interactive Map Layer
-st.subheader("📍 1. Select Farm Location on India Map")
-india_map = folium.Map(location=[20.5937, 78.9629], zoom_start=5)
-india_map.add_child(folium.LatLngPopup())
-map_data = st_folium(india_map, height=350, width=700)
-
-lat, lon, weather_summary = None, None, "No location selected."
-
-if map_data and map_data.get("last_clicked"):
-    lat = map_data["last_clicked"]["lat"]
-    lon = map_data["last_clicked"]["lng"]
-    st.success(f"Location Captured: Lat {lat:.4f}, Lon {lon:.4f}")
-    
-    # Fetch live weather (Free, No API Key Required)
-    try:
-        weather_url = f"https://open-meteo.com{lat}&longitude={lon}&current_weather=true"
-        w_res = requests.get(weather_url).json()
-        if "current_weather" in w_res:
-            cw = w_res["current_weather"]
-            weather_summary = f"Temp: {cw['temperature']}°C, WindSpeed: {cw['windspeed']} km/h"
-            st.info(f"☀️ Current Weather: {weather_summary}")
-    except Exception:
-        weather_summary = "Weather service temporarily offline."
-
-# 3. Multimodal Image Layer
-st.subheader("📸 2. Upload Crop, Leaves, or Soil Image")
-uploaded_file = st.file_uploader("Upload field imagery for visual diagnosis", type=["jpg", "jpeg", "png"])
-image = Image.open(uploaded_file) if uploaded_file else None
-if image:
-    st.image(image, caption="Uploaded Field Image", use_container_width=True)
-
-# 4. Interactive Chat Interface Layer (Bhumija Crisis Mode)
-st.subheader("💬 3. Chat with Bhumija AI")
-
-if "messages" not in st.session_state:
-    st.session_state.messages = []
-
-for msg in st.session_state.messages:
-    with st.chat_message(msg["role"]):
-        st.write(msg["content"])
-
-if user_query := st.chat_input("Ask about crop switching, emergency sowing, or water storage..."):
-    with st.chat_message("user"):
-        st.write(user_query)
-    st.session_state.messages.append({"role": "user", "content": user_query})
-
-    if client:
-        # Structured system rule for Super El Niño tracking
-        elnino_crisis_prompt = (
-            "You are Bhumija, an AI Crisis Agronomist specializing in Indian Super El Niño mitigation. "
-            f"The farmer is located at Latitude: {lat}, Longitude: {lon}. "
-            f"The current live weather status is: {weather_summary}. "
-            "CRITICAL PROTOCOLS: "
-            "1. If the coordinates place the farmer in high-risk arid zones (Marathwada, Vidarbha, Rayalaseema, Bundelkhand, Western Rajasthan), "
-            "   immediately guide them toward short-duration, drought-resilient alternatives like Millets (Ragi, Bajra, Jowar) or Pulses. "
-            "2. If an image shows dry, parched soil, give actionable micro-irrigation, mulching, or hydrogel instructions. "
-            "3. Educate the farmer about the Drought-Flood Paradox: recommend farm-ponds or water harvesting trenches to catch "
-            "   sudden flash cloudbursts safely. "
-            f"Farmer Input: {user_query}"
-        )
-        
-        payload = [elnino_crisis_prompt]
-        if image:
-            payload.append(image)
-
-        with st.chat_message("assistant"):
-            with st.spinner("Analyzing agricultural parameters..."):
-                try:
-                    response = client.models.generate_content(
-                        model='gemini-2.5-flash',
-                        contents=payload
-                    )
-                    st.write(response.text)
-                    st.session_state.messages.append({"role": "assistant", "content": response.text})
-                except Exception as e:
-                    st.error(f"Execution Error: {e}")
 ```
+[React Frontend] ────(HTTP /api/* Proxy)────► [FastAPI Backend]
+       │                                             │
+       ├─► Supabase: Log Search Queries              ├─► Google Gemini API
+       ├─► Supabase: Log SMS Subscriptions           ├─► Twilio SMS Delivery
+       └─► Vercel Analytics                          ├─► Agromonitoring API
+                                                     └─► Open-Meteo API
+```
+
+Data Flow Sequence:
+1. Farmer selects a location on the Mappls Map component (either by geocode search, GPS, or manual pin drops).
+2. The coordinates are matched to the nearest drought-vulnerable district.
+3. Live Open-Meteo and Agromonitoring weather/satellite telemetry is fetched for the location.
+4. The crops advice and alerts engine in the backend processes this data to recommend drought-resilient crops and calculate dry-spell alert badges.
+5. If the farmer subscribes to SMS alerts, a concise GSM-compliant SMS summary is built and sent via Twilio to the farmer's mobile phone, and logged to Supabase.
 
 8. DEPLOYMENT & SHARING PIPELINE
 --------------------------------------------------------------------------------
-* Git Repository Name: bhumija: 
-* Free Deployment Platform: Streamlit Community Cloud (linked to public GitHub)
-* Expected Endpoint URL Structure: https://streamlit.app
-ensure that we are able to run it at low cost, use free apis where possible, 
+* Git Repository: https://github.com/ravii-teja/bhumija
+* Deployment Platform: Vercel (React Static Build + Python Serverless Functions)
+* Supabase Backend: Cloud Database for search query analytics and subscriber tables.
+* Twilio SMS Integration: Indian standard phone numbers (e.g. 10-digit mobile) auto-normalized to E.164.
+use free apis where possible,

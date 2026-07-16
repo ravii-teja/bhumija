@@ -264,55 +264,71 @@ App.handleSelectLocation(lat, lon, district?, { name, address })
 2. Add **all** variables above for **Production**, **Preview**, and **Development**
 3. Redeploy after adding or changing keys
 
-**Minimum for core app:** `MAPMYINDIA_API_KEY` (map + search required)  
-**Recommended:** `GEMINI_API_KEY`, `AGROMONITORING_API_KEY` (Open-Meteo fallbacks work for rain/soil/NDVI when Agro fails)  
-**Required for live SMS:** all `TWILIO_*` variables (Account SID + Messaging Service + credentials)
-
 ### Key capabilities to enable in Mappls Console
-
+ 
 Ensure these are enabled for your Mappls app:
 - Web Maps JS SDK
 - Autosuggest API
 - Geocoding API
-
+ 
 ---
 
+## 4b. Supabase Analytics Integration
+
+Bhumija uses a Supabase backend to track queries and numbers accessed to monitor usage and improve quality.
+
+### Credentials
+Configured in `frontend/.env`:
+```env
+VITE_SUPABASE_URL=https://cbzbhwxchjvjadrbjftv.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_sncbaKNrAWT0oXFsUWylAA_jDHSFNrO
+```
+
+### Logged Tables
+1. **`queries`**: Stores search query and location clicks.
+   - Schema: `lat` (float), `lon` (float), `district` (text), `place_name` (text), `place_address` (text), `created_at` (timestamptz).
+2. **`subscriptions`**: Stores SMS alerts/number subscriptions.
+   - Schema: `phone` (text), `lat` (float), `lon` (float), `language` (text), `status` (text), `created_at` (timestamptz).
+
+---
+ 
 ## 5. External APIs Used
-
+ 
 ### Mappls / MapMyIndia (requires `MAPMYINDIA_API_KEY`)
-
+ 
 | API | Endpoint | Used by |
 |-----|----------|---------|
 | **Web Maps SDK** | `https://sdk.mappls.com/map/sdk/web?v=3.0&access_token=<KEY>` | Frontend map overlay |
 | **Autosuggest** | `https://search.mappls.com/search/places/autosuggest/json` | `/api/search` |
 | **Geocoding** | `https://search.mappls.com/search/address/geocode` | `/api/search` primary geocode |
-
+ 
 ### Google Gemini (requires `GEMINI_API_KEY`)
-
+ 
 | API | Model | Used by |
 |-----|-------|---------|
 | **Google GenAI SDK** | `gemini-2.5-flash` | `/api/chat`, `/api/farmer/voice-advisory`, `/api/farmer/health-log` |
-
+ 
 **Chat endpoint supports:** `message`, `lat`, `lon`, `lang` (en/hi/te/mr/kn), `conversation` (JSON history), optional `image` (crop/irrigation photo).
-
+ 
 **Fallback:** Rule-based expert advisory if Gemini unavailable.
-
+ 
 ### Twilio (requires `TWILIO_*` env vars)
-
+ 
 | API | Used by |
 |-----|---------|
 | **Messages API** | `POST /2010-04-01/Accounts/{SID}/Messages.json` via Messaging Service | `/api/farmer/sms-subscribe` |
-
-SMS flow: farmer selects location → enters mobile → backend gathers **full farm context** → **single holistic SMS** (≤160 chars) via Twilio → subscriber saved. Includes: location, 90d + 72h rain, soil %, best crop + score, weekly action hint, RSK phone. Indian numbers auto-formatted to `+91…`.
+ 
+SMS flow: farmer selects location → enters mobile → backend gathers **full farm context** → **single holistic SMS** (≤160 chars) via Twilio → subscriber saved. Includes: location, 90d + 72h rain, soil %, best crop + score, weekly action hint, RSK phone. 
+- **Phone Normalization (E.164)**: Auto-formats 10-digit Indian numbers (e.g. `6303850265` -> `+916303850265`), handles national `0` prefixes, and formats double-zero `00` international prefixes.
 
 **Form fields:** `phone`, `lat`, `lon`, `lang`, `place_name` (optional — from search bar).
-
+ 
 Holistic SMS builder: `build_holistic_sms_body()` in [`backend/farmer_intelligence.py`](backend/farmer_intelligence.py) — reusable for future scheduled alert cron.
-
+ 
 Implementation: [`backend/twilio_sms.py`](backend/twilio_sms.py)
-
+ 
 ### Open-Meteo (free, no key)
-
+ 
 | API | Endpoint | Used by |
 |-----|----------|---------|
 | **Weather forecast** | `https://api.open-meteo.com/v1/forecast` | `/api/weather`, agro fallbacks |
@@ -321,11 +337,11 @@ Implementation: [`backend/twilio_sms.py`](backend/twilio_sms.py)
 | **Soil moisture model** | `https://api.open-meteo.com/v1/forecast?hourly=soil_moisture_0_to_7cm` | `/api/agro/insights` when Agro polygon unavailable |
 | **72h forecast rain** | `https://api.open-meteo.com/v1/forecast?hourly=precipitation` | `/api/agro/insights` when Agro forecast empty |
 | **Geocoding (search fallback)** | `https://geocoding-api.open-meteo.com/v1/search` | `/api/search` when Mappls geocode fails |
-
+ 
 Open-Meteo is the **automatic fallback** when Agromonitoring historical rain or polygon-based soil/NDVI fail. Responses include `estimated: true` and `(est.)` in the UI where applicable.
-
+ 
 ### Agromonitoring / OpenWeather Agro (requires `AGROMONITORING_API_KEY`)
-
+ 
 | API | Endpoint | Used by |
 |-----|----------|---------|
 | **Current agro weather** | `https://api.agromonitoring.com/agro/1.0/weather` | `/api/agro/insights`, district overlay |
@@ -335,28 +351,28 @@ Open-Meteo is the **automatic fallback** when Agromonitoring historical rain or 
 | **NDVI history** | `https://api.agromonitoring.com/agro/1.0/ndvi/history?polyid=` | `/api/agro/insights` — requires polygon |
 | **Create field polygon** | `POST https://api.agromonitoring.com/agro/1.0/polygons` | Auto-created per farm location — **free tier limit** |
 | **List polygons** | `GET https://api.agromonitoring.com/agro/1.0/polygons` | Debug quota; delete unused polygons to free slots |
-
+ 
 **Free-tier limitations (observed July 2026):**
-
+ 
 | Limit | HTTP response | Bhumija behavior |
 |-------|---------------|------------------|
 | Historical accumulated rain | `401` | Falls back to Open-Meteo archive/forecast |
 | Polygon quota exhausted | `413` “You can not create polygons anymore” | Falls back to Open-Meteo soil + NDVI estimate |
 | New polygon NDVI delay | Empty `/ndvi/history` | Satellite pass may take days; free tier skips cloudy scenes |
-
+ 
 **Map overlay modes:** Risk zones · Monsoon (90d) · Soil / Water · All layers (composite)  
 **Risk colors:** Red (high/dry) · Yellow (medium) · Blue (favorable/moist)
-
+ 
 ---
-
+ 
 ## 6. Internal API Endpoints
-
+ 
 Base URL:
 - **Local:** `http://localhost:8000`
 - **Production:** `https://<your-vercel-domain>/api`
-
+ 
 Full contract: [`apis/api_contract.md`](apis/api_contract.md)
-
+ 
 | Method | Path | Description |
 |--------|------|-------------|
 | `GET` | `/api/config` | Map key, Gemini/Agro/Twilio flags, supported languages |
@@ -372,19 +388,19 @@ Full contract: [`apis/api_contract.md`](apis/api_contract.md)
 | `GET` | `/api/farmer/health-logs` | Recent health logs |
 | `POST` | `/api/farmer/sms-subscribe` | **Twilio SMS** — single-segment holistic advisory (`place_name` optional) |
 | `POST` | `/api/farmer/voice-advisory` | Indic voice transcript → advisory |
-
+ 
 **Frontend UI:** Full-screen map + **Bhumija Assistant** panel (chat, voice with stop, photo, SMS, crop/forecast insights). Mobile: bottom nav **Map | Assistant** with bottom sheet.
-
+ 
 **Search response fields:** `name`, `address`, `lat`, `lon`, `district_id`, `district_name`, `approximate_district`, `source`
-
+ 
 **SMS subscribe response fields:** `subscribed`, `sample_sms`, `holistic_summary`, `delivery`, `message_sid`, `twilio_configured`
-
+ 
 Full action log: [`content.md`](content.md)
-
+ 
 ---
-
+ 
 ## 7. Project Structure
-
+ 
 ```
 bhumija/
 ├── content.md              ← chat history, actions taken, feature context
@@ -428,40 +444,42 @@ bhumija/
     ├── hooks/useMediaQuery.js
     └── utils/
         ├── mappls.js
-        └── riskScore.js
+        ├── riskScore.js
+        └── supabase.js       ← Supabase client initialization
 ```
-
+ 
 ---
-
+ 
 ## 8. GitHub Setup & Push
-
+ 
 ### First-time push
-
+ 
 1. Create an empty repo at https://github.com/ravii-teja/bhumija (no README/license if pushing existing code)
 2. Push from local:
-
+ 
 ```bash
 cd /Users/in-r.teja/Devo/bhumija
 git remote add origin https://github.com/ravii-teja/bhumija.git
 git branch -M main
 git push -u origin main
 ```
-
+ 
 ### What is committed vs ignored
-
+ 
 | Committed | Ignored (never push) |
 |-----------|----------------------|
 | Source code, configs, `districts.json` | `backend/.env` |
 | `.env.example` (placeholders only) | `backend/venv/` |
 | `vercel.json`, `requirements.txt` | `frontend/node_modules/` |
 | | `frontend/dist/` |
-
+| | `frontend/.env` |
+ 
 ---
-
+ 
 ## 9. Vercel Deployment Steps
-
+ 
 ### One-time setup
-
+ 
 1. Push code to GitHub (see above)
 2. Go to https://vercel.com/new
 3. **Import** `ravii-teja/bhumija`
@@ -471,14 +489,14 @@ git push -u origin main
    - **Install command:** `cd frontend && npm install`
 5. Add environment variables (Section 4)
 6. Click **Deploy**
-
+ 
 ### How routing works on Vercel
-
+ 
 | Request | Handled by |
 |---------|------------|
 | `/`, `/assets/*`, SPA routes | Static files from `frontend/dist` |
 | `/api/*` | Python serverless function (`api/index.py` → `backend/main.py`) |
-
+ 
 Defined in [`vercel.json`](vercel.json):
 ```json
 "rewrites": [
@@ -486,59 +504,11 @@ Defined in [`vercel.json`](vercel.json):
   { "source": "/((?!api/).*)", "destination": "/index.html" }
 ]
 ```
-
-### Post-deploy verification
-
-Test these URLs (replace domain with yours):
-
-```bash
-curl https://<your-domain>/api/config
-curl https://<your-domain>/api/districts
-curl "https://<your-domain>/api/weather?lat=19.8762&lon=75.3433"
-curl "https://<your-domain>/api/agro/insights?lat=19.8762&lon=75.3433"
-curl "https://<your-domain>/api/agro/district-overlay"
-curl "https://<your-domain>/api/search?q=Pune"
-curl "https://<your-domain>/api/search?q=aurangabad"
-curl -X POST "https://<your-domain>/api/farmer/sms-subscribe" \
-  -F "phone=9876543210" -F "lat=18.5196" -F "lon=73.8554" -F "lang=hi" -F "place_name=Pune"
-```
-
-Then open the app: select a district on the map, open **Assistant**, try voice (Chrome), use **Stop voice** during listen/speak, chat, photo upload, and SMS subscribe.
-
-### Local smoke test (July 2026 verified)
-
-Run with backend on `:8000` and frontend on `:3000`:
-
-```bash
-# Config & data
-curl -s http://localhost:8000/api/config | python3 -m json.tool
-curl -s http://localhost:8000/api/districts | python3 -c "import sys,json; print(len(json.load(sys.stdin)), 'districts')"
-
-# Weather & agro (Aurangabad coords)
-curl -s "http://localhost:8000/api/weather?lat=19.8762&lon=75.3433"
-curl -s "http://localhost:8000/api/agro/insights?lat=19.8762&lon=75.3433" | python3 -m json.tool | head -40
-
-# Search any city (expect ~18.52, 73.86 for Pune)
-curl -s "http://localhost:8000/api/search?q=Pune" | python3 -m json.tool
-
-# Crop + alerts
-curl -s "http://localhost:8000/api/farmer/crop-recommend?lat=18.5196&lon=73.8554&lang=hi"
-curl -s "http://localhost:8000/api/farmer/alerts?lat=18.5196&lon=73.8554&lang=hi"
-
-# SMS (Twilio required; check sample_sms length ≤160)
-curl -s -X POST "http://localhost:8000/api/farmer/sms-subscribe" \
-  -F "phone=9876543210" -F "lat=18.5196" -F "lon=73.8554" -F "lang=hi" -F "place_name=Pune"
-
-# Frontend build
-cd frontend && npm run build
-```
-
-**Expected:** rain/soil/NDVI populated (some marked `estimated: true` on Agro free tier); Pune search returns correct coords; SMS `sample_sms` ≤160 chars.
-
+ 
 ---
-
+ 
 ## 10. Troubleshooting
-
+ 
 | Issue | Likely cause | Fix |
 |-------|--------------|-----|
 | Map shows "API key missing" | `MAPMYINDIA_API_KEY` not set or `/api/config` failing | Check `backend/.env` locally or Vercel env vars; redeploy |
@@ -560,13 +530,14 @@ cd frontend && npm run build
 | Local frontend can't reach API | Backend not running | Run `./start.sh` or backend on `:8000` |
 | Vercel API 500 errors | Python deps or cold start | Check Vercel Functions logs; ensure `twilio` in root `requirements.txt` |
 | SSL errors on macOS (local) | Python cert store | Backend uses certifi with SSL fallback |
-
+| Supabase tracking fails | Missing environment vars in frontend | Make sure `frontend/.env` contains valid credentials and rebuild frontend |
+ 
 ---
-
+ 
 ## 11. Future / Scale APIs (from product plan)
-
+ 
 These are documented in [`product_plan.md`](product_plan.md) for post-hackathon scale — not yet integrated:
-
+ 
 | API / Tool | Purpose |
 |------------|---------|
 | Google Earth Engine (GEE) | NDVI, SMAP soil moisture satellite layers |
@@ -574,14 +545,15 @@ These are documented in [`product_plan.md`](product_plan.md) for post-hackathon 
 | Google AMED API | Crop type & sowing/harvest detection |
 | Google NeuralGCM | Monsoon shift prediction |
 | Google SEEDS | Ensemble weather forecasting |
-
+ 
 ---
-
+ 
 ## 12. Quick Reference Checklist
-
+ 
 - [ ] `backend/.env` with MapMyIndia key (required)
 - [ ] `backend/.env` with Gemini + Agromonitoring keys (recommended; Open-Meteo fallbacks cover gaps)
 - [ ] `backend/.env` with Twilio Account SID, Messaging Service, API key (or Auth Token)
+- [ ] `frontend/.env` with Supabase keys configured
 - [ ] Local app: `./start.sh` or separate backend + frontend terminals → http://localhost:3000
 - [ ] Map: search **Pune** or any city, pin, GPS, overlays, location metrics (auto-expanded)
 - [ ] Search returns correct city coords (~18.52, 73.86 for Pune)
@@ -592,23 +564,24 @@ These are documented in [`product_plan.md`](product_plan.md) for post-hackathon 
 - [ ] Export deck: open [`ppt.md`](ppt.md) → PDF for presentations
 - [ ] Code pushed to https://github.com/ravii-teja/bhumija
 - [ ] Vercel project imported; **all** env vars set
-- [ ] Production verified: map, assistant, Twilio SMS test
-
+- [ ] Production verified: map, assistant, Twilio SMS test, Supabase analytics table logs
+ 
 ---
-
-## 13. Implementation Changelog (Phases 9–12)
-
+ 
+## 13. Implementation Changelog (Phases 9–13)
+ 
 Summary of recent changes — full detail in [`content.md`](content.md).
-
+ 
 | Phase | Theme | Key files | Outcome |
 |-------|-------|-----------|---------|
 | **9** | Map data fix | `agro_client.py`, `MapLocationMetrics.jsx`, `mappls.js` | Open-Meteo fallbacks when Agro 401/413; soft district match; mobile metrics auto-expand |
 | **10** | Holistic SMS | `farmer_intelligence.py`, `twilio_sms.py` | Location + rain + soil + crop + weekly plan in one message |
 | **11** | Single SMS + any-city search | `main.py`, `SearchBar.jsx`, `App.jsx` | ≤160 char GSM-safe SMS; city-first search; Mappls + Open-Meteo geocode; `placeName` in UI/SMS |
 | **12** | Voice stop + docs | `BhumijaAssistant.jsx`, `deployment.md`, `api_contract.md` | Stop voice bar; smoke test commands; full ops reference |
-
+| **13** | Supabase & E.164 normalizer | `twilio_sms.py`, `supabase.js`, `BhumijaAssistant.jsx`, `App.jsx` | Robust E.164 phone formats (Indian standard, leading 0, double-zero 00 prefixes); Supabase query & subscription logs |
+ 
 ### Backend key functions
-
+ 
 | Function | File | Purpose |
 |----------|------|---------|
 | `_geocode_place()` | `main.py` | Mappls geocode → Open-Meteo fallback |
@@ -619,12 +592,13 @@ Summary of recent changes — full detail in [`content.md`](content.md).
 | `build_holistic_sms_body()` | `farmer_intelligence.py` | Single-segment SMS text builder |
 | `build_weekly_plan()` | `farmer_intelligence.py` | Weekly action hints for SMS + API |
 | `send_sms()` | `twilio_sms.py` | Twilio send with 160-char truncation |
-
+| `normalize_phone_e164()` | `twilio_sms.py` | Formats and cleans Indian standard, leading zero, and double-zero phone numbers |
+ 
 ### Related documents
-
+ 
 | File | Purpose |
 |------|---------|
-| [`content.md`](content.md) | Full action log, phases 1–12, E2E data flow |
+| [`content.md`](content.md) | Full action log, phases 1–13, E2E data flow |
 | [`ppt.md`](ppt.md) | 10-slide presentation deck |
 | [`product_plan.md`](product_plan.md) | Original product specification |
 | [`apis/api_contract.md`](apis/api_contract.md) | API request/response contract |
