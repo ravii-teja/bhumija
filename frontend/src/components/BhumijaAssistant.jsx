@@ -13,6 +13,7 @@ import {
   Volume2,
   X,
 } from 'lucide-react';
+import { supabase } from '../utils/supabase';
 
 const SPEECH_LANG = {
   en: 'en-IN',
@@ -412,9 +413,31 @@ export default function BhumijaAssistant({
         } else {
           setSmsStatus(data.sample_sms || 'Subscribed to dry-spell alerts');
         }
+        // Save success to Supabase
+        supabase.from('subscriptions').insert([{
+          phone,
+          lat: selectedLocation.lat,
+          lon: selectedLocation.lon,
+          language,
+          status: data.delivery || 'subscribed',
+          created_at: new Date().toISOString()
+        }]).then(({ error }) => {
+          if (error) console.error('Error saving subscription to Supabase:', error);
+        });
       } else {
         const err = await res.json().catch(() => ({}));
         setSmsStatus(err.detail || 'Subscription failed');
+        // Save failed subscription to Supabase
+        supabase.from('subscriptions').insert([{
+          phone,
+          lat: selectedLocation.lat,
+          lon: selectedLocation.lon,
+          language,
+          status: 'failed',
+          created_at: new Date().toISOString()
+        }]).then(({ error }) => {
+          if (error) console.error('Error saving subscription to Supabase:', error);
+        });
       }
     } catch {
       setSmsStatus('Could not subscribe. Try again.');

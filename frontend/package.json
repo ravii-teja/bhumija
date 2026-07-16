@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.110.6",
     "@vercel/analytics": "^2.0.1",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.395.0",

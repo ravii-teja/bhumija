@@ -1,247 +1,120 @@
 ---
 title: Bhumija — El Niño Resilience Engine
-subtitle: 10-Slide Deck (export to PDF via Marp, Slidev, or Google Slides)
-author: Bhumija Team
+subtitle: 9-Slide Presentation
+author: Team Rocket
 date: July 2026
 ---
 
-<!-- SLIDE 1: TITLE -->
+<!-- SLIDE 1 -->
+# The Problem & Our Approach
 
-# Bhumija
-## Born of the Earth
+## Overcoming Micro-Climate Blindness
 
-**AI-powered drought resilience for Indian farmers**
+**The Problem:**
+Farmers face catastrophic crop failures due to unpredictable monsoons and a lack of data-driven guidance. Traditional choices rely on habit or hearsay rather than crucial localized metrics like soil health, groundwater depth, or rainfall data, leading to wasted resources and financial devastation during El Niño events.
 
-Free · Map-first · Voice · SMS · Indic languages
-
-*Hackathon / Demo deck — one section = one slide*
-
----
-
-<!-- SLIDE 2: PROBLEM -->
-
-# The Problem
-
-## Super El Niño & India's Kharif Crisis
-
-| Challenge | Impact |
-|-----------|--------|
-| **Deficient / delayed monsoon** | Failed Kharif sowing; Rabi deficits follow |
-| **Micro-climate blindness** | State-level forecasts miss district rain shadows |
-| **Drought–flood paradox** | Dry soil cannot absorb sudden cloudbursts → flash runoff |
-| **Late advisories** | Paper/SMS chains reach farmers weeks after soil changes |
-| **Digital divide** | Smallholders lack smartphones literacy & English-only apps |
-
-**Who suffers most:** Rainfed farmers in Marathwada, Vidarbha, Rayalaseema, Rajasthan, Bundelkhand — **86% of India's farmers are small & marginal.**
-
-**Food security link:** Crop failure → rural distress → higher import pressure on pulses, oilseeds, and cereals.
+**How We Tackle It:**
+Bhumija is a voice-and-SMS agricultural intelligence platform built in Indic languages for small and marginal farmers. We replace guesswork with data by bringing satellite and soil insights directly to the farmer, delivering real-time dry-spell alerts, crop recommendations, and pest diagnosis.
 
 ---
 
-<!-- SLIDE 3: SOLUTION -->
+<!-- SLIDE 2 -->
+# The Bhumija Solution
 
-# What Bhumija Does
+## Connecting Data to the Field
+**Product Link:** https://bhumija-phi.vercel.app/
 
-## A free digital shield for rainfed agriculture
+**How We Are Solving It:**
+We built a smart crop recommendation engine and a real-time advisory system that alerts farmers about local dry spells and provides irrigation/fertilization guidance before crops fail.
 
-**Bhumija** turns satellite, weather, and soil signals into **actionable farm advice** at the **plot level**.
-
-| Capability | Farmer benefit |
-|------------|----------------|
-| **Interactive map** | See El Niño risk zones, monsoon & soil overlays |
-| **Hyper-local metrics** | 90d/365d rain, soil moisture, NDVI, crop fit |
-| **Smart crop picks** | Drought-resilient alternatives (Bajra, Tur, Moong…) |
-| **Dry-spell alerts** | Irrigation & mulching guidance before stress |
-| **AI Assistant** | Chat, voice, photo upload in **5 Indic languages** |
-| **SMS alerts (Twilio)** | One compact message: location, rain, crop, weekly plan, RSK |
-| **RSK referral** | Link to nearest **Rythu Seva Kendra** for expert follow-up |
-
-**Tagline:** *Right crop · Right time · Right water — before the dry spell wins.*
+**Data Points Gathered & Combined:**
+- **Satellite & Weather Data:** Rainfall tracking, temperature, and Open-Meteo climate data.
+- **Soil & Ground Sensor Data:** Soil moisture, vegetation health (NDVI).
+- **Agricultural Knowledge:** Seasonal patterns, drought-resilient crop suitability, and historical sowing trends.
+*By unifying these layers through Google Gemini AI, Bhumija delivers precise, location-aware agronomic intelligence.*
 
 ---
 
-<!-- SLIDE 4: IMPACT -->
+<!-- SLIDE 3 -->
+# Process Flow
 
-# Impact on El Niño & Food Shortages
+## From Satellite to Action
 
-## From climate shock to informed action
-
-```
-El Niño weakens monsoon
-        ↓
-Soil moisture drops · NDVI stress
-        ↓
-Bhumija detects risk (map + APIs)
-        ↓
-Farmer gets crop switch + irrigation plan
-        ↓
-Reduced crop loss · Better water use · Food stability
-```
-
-| Without Bhumija | With Bhumija |
-|-----------------|--------------|
-| Sow water-heavy cotton/soy in dry year | Switch to **short-duration millets & pulses** |
-| Flood-irrigate during dry spell | **Drip/mulch** timing from soil + 72h rain |
-| Learn too late from block office | **Instant SMS + AI** at farm coordinates |
-| No expert path | **RSK phone** in every alert |
-
-**Scale target:** 16 curated high-risk districts today → 315 vulnerable districts roadmap.
-
-**Potential outcomes:** Lower preventable Kharif losses, improved pulse self-sufficiency, fewer distress migrations.
+1. **Location Capture:** Farmer accesses the app via mobile/desktop; GPS or map click captures precise coordinates.
+2. **Data Aggregation:** The backend fetches real-time weather, soil metrics, and historical rainfall for that exact micro-climate.
+3. **AI Analysis:** Google Gemini processes the geospatial data alongside current agricultural rules to generate tailored recommendations.
+4. **Actionable Delivery:** Insights are delivered via an interactive map, Voice/Text Chat in native Indic languages, and SMS.
+5. **Expert Handoff:** For complex issues like crop health logging via photo, the platform connects farmers to Rythu Seva Kendras for professional follow-up.
 
 ---
 
-<!-- SLIDE 5: HOW TO USE (FARMER) -->
+<!-- SLIDE 4 -->
+# How to Use Bhumija: Geospatial & Visual Insights
 
-# How to Use — Farmer Journey
+## Precise Field-Level Intelligence
 
-## 5 steps on phone or desktop
-
-1. **Open** → http://localhost:3000 (or your Vercel URL)
-2. **Find your farm**
-   - Search any **city or village** (e.g. Pune, Aurangabad)
-   - Or tap a **colored district circle**, **drop a pin**, or use **GPS**
-3. **Read the metrics card** — monsoon rain, soil, weather, vegetation, best crop, risk badge (red / yellow / blue)
-4. **Open Bhumija Assistant**
-   - Ask in **Hindi, Telugu, Marathi, Kannada, or English**
-   - Use **mic** (Chrome) or **upload a field photo**
-5. **Subscribe to SMS** — enter mobile → tap **Alerts** → receive **one** holistic advisory SMS
-
-**Mobile:** Bottom nav **Map | Assistant** · Metrics auto-expand when location is selected.
+**Map Visuals & Geolocation Based Insights:**
+- **Interactive Targeting:** Simply search for your village, drop a pin on the interactive MapMyIndia interface, or use device GPS.
+- **Real-Time Overlays:** Visualize El Niño risk zones, monsoon tracks, and soil moisture levels directly on the map.
+- **Hyper-Local Metrics Dashboard:** Instantly view 90-day/365-day rainfall accumulation, vegetation stress (NDVI), and current temperatures specific to your plot, not just the broader district.
 
 ---
 
-<!-- SLIDE 6: HOW TO USE (DEMO) -->
+<!-- SLIDE 5 -->
+# How to Use Bhumija: The AI Assistant
 
-# Demo Script (3 minutes)
+## Voice & Text Chat Interface
 
-| Step | Action | Show |
-|------|--------|------|
-| 0:00 | Search **Pune** → select **City** | Map centers; metrics populate |
-| 0:30 | Toggle overlay **Monsoon** / **Soil** | District colors update |
-| 1:00 | Open **Assistant** | Top crop + 72h rain chips |
-| 1:30 | Ask: *"What should I sow this week?"* | Gemini or rule-based reply with location context |
-| 2:00 | Enter phone → **Alerts** | Single SMS: rain, Bajra, weekly hint, RSK |
-| 2:30 | Tap **Aurangabad** district | El Niño high-risk zone + Marathwada crops |
-
-**Fallback if Gemini quota exceeded:** Rule-based expert mode still answers with district + weather + crop data.
+**Bhumija Assistant (Crisis Mode):**
+- **Native Language Support:** Chat seamlessly in English, Hindi, Telugu, Marathi, or Kannada. 
+- **Voice-Enabled:** No typing required! Use the microphone to ask questions naturally ("What should I sow this week?").
+- **Visual Diagnosis:** Upload a photo of stressed crops, leaves, or dry soil directly into the chat. The Gemini vision model instantly analyzes the image and suggests remedies or connects you with a Rythu Seva Kendra.
 
 ---
 
-<!-- SLIDE 7: TECH STACK -->
+<!-- SLIDE 6 -->
+# How to Use Bhumija: Actionable Advice
 
-# Tech Stack
+## Real-Time Insights & Smart Alerts
 
-## Modern, free-tier-friendly architecture
-
-```
-┌─────────────────────────────────────────────────────────┐
-│  React 18 + Vite + Tailwind  │  Mappls Web SDK (map)    │
-│  BhumijaAssistant · SearchBar · MapLocationMetrics      │
-└───────────────────────────┬─────────────────────────────┘
-                            │ /api/*  (Vite proxy / Vercel)
-┌───────────────────────────▼─────────────────────────────┐
-│  FastAPI (Python) — main.py                             │
-│  agro_client · farmer_intelligence · twilio_sms         │
-└───────────────────────────┬─────────────────────────────┘
-                            │
-     ┌──────────────────────┼──────────────────────┐
-     ▼                      ▼                      ▼
- MapMyIndia            Open-Meteo              Agromonitoring
- (map/search)          (weather/rain/soil)     (NDVI when available)
-     │                      │                      │
-     └──────────────────────┼──────────────────────┘
-                            ▼
-              Gemini 2.5 Flash · Twilio SMS
-```
-
-| Layer | Tools |
-|-------|-------|
-| **Frontend** | React, Vite, Tailwind, Lucide, Web Speech API |
-| **Backend** | FastAPI, Uvicorn, google-genai, twilio, Pillow |
-| **Deploy** | Vercel (static + Python serverless), GitHub |
-| **Data** | JSON districts, RSK kendras, runtime subscriber logs |
+**Making Data-Driven Decisions:**
+- **Smart Crop Picks:** Get immediate suggestions for short-duration or drought-resilient crops (like Bajra, Tur, Moong) based on the live moisture profile of your soil.
+- **In-App Alerts:** Receive dynamic "red/yellow/green" risk badges alerting you to upcoming dry spells.
+- **Irrigation Guidance:** The platform tells you exactly when to deploy protective measures like mulching or drip irrigation, ensuring every drop of water is conserved.
 
 ---
 
-<!-- SLIDE 8: DATA FLOW -->
+<!-- SLIDE 7 -->
+# Forecasting Alerts via SMS
 
-# End-to-End Data Flow
+## Reaching the Unconnected
 
-## What happens when a farmer selects a location
-
-```
-User selects lat/lon (search · pin · GPS · district tap)
-        │
-        ├─► GET /api/weather          → Open-Meteo (temp, humidity)
-        ├─► GET /api/agro/insights    → Rain 90d/365d, soil, NDVI, forecast
-        │         (Agromonitoring + Open-Meteo fallbacks)
-        ├─► GET /api/farmer/crop-recommend → Region-aware drought crops
-        ├─► GET /api/farmer/alerts    → Dry-spell severity + irrigation
-        │
-        ▼
-Map metrics card + Assistant briefing + risk halo on map
-
-SMS subscribe:
-        │
-        ├─► Gather same context
-        ├─► build_holistic_sms_body() → ≤160 chars, 1 SMS segment
-        └─► Twilio → farmer phone (+91 formatted)
-```
-
-**Search any city:** MapMyIndia autosuggest → geocode (Mappls → Open-Meteo fallback) → nearest advisory district for crops.
+**No Smartphone? No Problem:**
+- **Automated Mobile Alerts:** Farmers can subscribe by entering their phone number on the dashboard.
+- **Proactive Forecasting:** The system sends out compact, one-segment SMS alerts via Twilio directly to the farmer's mobile phone.
+- **Comprehensive SMS Content:** A single message contains the location summary, 72-hour rainfall forecast, the top recommended crop, a weekly agricultural hint, and a direct referral to the nearest Rythu Seva Kendra.
 
 ---
 
-<!-- SLIDE 9: KEY INTEGRATIONS -->
+<!-- SLIDE 8 -->
+# Tech Stack Overview
 
-# APIs & Resilience Design
+## A Modern, Scalable Architecture
 
-| Service | Role | Fallback if unavailable |
-|---------|------|-------------------------|
-| **MapMyIndia / Mappls** | Map tiles, search, geocode | Open-Meteo geocoding |
-| **Open-Meteo** | Weather, 90d/365d rain, soil model | Static weather defaults |
-| **Agromonitoring** | Live agro weather, satellite NDVI/soil | Open-Meteo + NDVI estimate |
-| **Gemini 2.5 Flash** | Chat, voice, photo diagnosis | Rule-based expert advisory |
-| **Twilio** | SMS alerts | Local subscribe + `sample_sms` in API |
-
-**Design principle:** Farmers always see **something useful** — never blank `—` metrics when a free fallback exists.
-
-**Languages:** English · Hindi · Telugu · Marathi · Kannada
+- **Frontend:** React 18, Vite, and Tailwind CSS for a fast, mobile-responsive UI. Map layers powered by MapMyIndia (Mappls) and Leaflet.
+- **Backend:** FastAPI (Python) running seamlessly as a Vercel serverless function.
+- **AI & Intelligence:** Google Gemini 2.5 Flash for multimodal chat, voice, and vision diagnosis.
+- **Data Integrations:** Open-Meteo for real-time weather/soil telemetry; Twilio for robust SMS alert delivery.
+- **Deployment:** Vercel for zero-config global edge delivery and GitHub for version control.
 
 ---
 
-<!-- SLIDE 10: ROADMAP & CLOSE -->
+<!-- SLIDE 9 -->
+# Team Rocket
 
-# Roadmap & Call to Action
+## The Builders
 
-## Built · Proven · Ready to scale
+**Ravi Teja Bankupalli**  
+**Karunakara Reddy**
 
-| ✅ Shipped | 🔜 Next |
-|-----------|---------|
-| Map-first UI + 16 risk districts | Expand to 315 vulnerable districts |
-| Open-Meteo agro fallbacks | Scheduled weekly SMS cron |
-| Holistic single-segment SMS | Postgres for subscribers & farms |
-| Any-city search + geocode | Mandi prices · irrigation calendar |
-| Voice + photo + RSK referral | Google Earth Engine at scale |
-
----
-
-# Thank You
-
-**Bhumija** — *Born of the Earth*
-
-- **Demo:** http://localhost:3000
-- **Repo:** https://github.com/ravii-teja/bhumija
-- **Docs:** `content.md` · `deployment.md`
-
-*Protecting Kharif. Empowering farmers. Building food resilience against El Niño.*
-
----
-
-## Export tips (for PDF)
-
-1. **Marp for VS Code** — open this file → export PDF/PPTX
-2. **Google Slides** — paste each `---` section as one slide
-3. **Pandoc** — `pandoc ppt.md -o bhumija-deck.pdf` (may need slide template)
-4. **Brand colors:** Orange `#ea580c` (brand-600) · Risk red `#dc2626` · Favorable blue `#2563eb`
+*Protecting Kharif. Empowering farmers. Building food resilience against El Niño through accessible AI and data.*

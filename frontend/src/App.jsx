@@ -8,6 +8,7 @@ import MobileNavBar from './components/MobileNavBar';
 import BottomSheet from './components/BottomSheet';
 import { findDistrictByCoords } from './utils/mappls';
 import { useIsMobile } from './hooks/useMediaQuery';
+import { supabase } from './utils/supabase';
 
 export default function App() {
   const isMobile = useIsMobile();
@@ -80,6 +81,22 @@ export default function App() {
 
     if (isMobile) {
       setMobileTab('map');
+    }
+
+    // Save query/location to Supabase
+    try {
+      supabase.from('queries').insert([{
+        lat,
+        lon,
+        district: matchedDistrict?.name || null,
+        place_name: placeMeta?.name || null,
+        place_address: placeMeta?.address || null,
+        created_at: new Date().toISOString()
+      }]).then(({ error }) => {
+        if (error) console.error('Error saving query to Supabase:', error);
+      });
+    } catch (e) {
+      console.error('Supabase logging error:', e);
     }
 
     try {

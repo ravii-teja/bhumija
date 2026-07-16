@@ -21,16 +21,40 @@ def twilio_configured() -> bool:
 
 
 def normalize_phone_e164(phone: str, default_country: str = "91") -> str:
-    digits = re.sub(r"\D", "", phone)
-    if not digits:
+    # Remove all whitespace, dashes, parentheses
+    cleaned = re.sub(r"[\s\-\(\)]", "", phone.strip())
+    if not cleaned:
         raise ValueError("Invalid phone number")
-    if digits.startswith("91") and len(digits) == 12:
-        return f"+{digits}"
-    if len(digits) == 10:
-        return f"+{default_country}{digits}"
-    if phone.strip().startswith("+"):
-        return f"+{digits}"
-    return f"+{digits}"
+    
+    # Check if it starts with + or international prefix 00
+    is_plus = False
+    if cleaned.startswith("+"):
+        is_plus = True
+        cleaned = cleaned[1:]
+    elif cleaned.startswith("00"):
+        is_plus = True
+        cleaned = cleaned[2:]
+        
+    # Strip any leading zeros from the remaining digits for national prefix handling
+    if is_plus:
+        if cleaned.startswith("0"):
+            cleaned = cleaned.lstrip("0")
+    else:
+        if cleaned.startswith("0"):
+            cleaned = cleaned.lstrip("0")
+
+    # If it is empty or has non-digits
+    if not cleaned or not cleaned.isdigit():
+        raise ValueError("Invalid phone number")
+
+    # Indian number heuristics
+    if len(cleaned) == 10:
+        return f"+{default_country}{cleaned}"
+    if len(cleaned) == 12 and cleaned.startswith("91"):
+        return f"+{cleaned}"
+        
+    return f"+{cleaned}"
+
 
 
 def _get_client():
