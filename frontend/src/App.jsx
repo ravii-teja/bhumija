@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronRight, PanelRight, Sparkles, Sprout } from 'lucide-react';
+import { Analytics } from '@vercel/analytics/react';
 import SearchBar from './components/SearchBar';
 import MapComponent from './components/MapComponent';
 import BhumijaAssistant from './components/BhumijaAssistant';
@@ -114,6 +115,7 @@ export default function App() {
 
   return (
     <div className="relative flex h-[100dvh] flex-col overflow-hidden bg-stone-900 font-sans text-stone-900 antialiased">
+      <Analytics />
       <main className="relative min-h-0 flex-1">
         <MapComponent
           mapKey={mapKey}
