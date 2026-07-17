@@ -77,7 +77,7 @@ def log_subscription_to_db(phone: str, lat: float, lon: float, language: str, st
         except Exception as e:
             print(f"Error logging subscription to DB: {e}")
 
-def update_statewise_repository(lat: float, lon: float):
+def update_statewise_repository(lat: float, lon: float, weather_res: Optional[dict] = None):
     district = find_nearest_district(lat, lon)
     if not district or not district.get("state"):
         return
@@ -88,7 +88,8 @@ def update_statewise_repository(lat: float, lon: float):
     
     # Get current weather
     try:
-        weather_res = get_weather(lat, lon)
+        if weather_res is None:
+            weather_res = _get_raw_weather(lat, lon)
         weather_info = {
             "temperature": weather_res.get("temperature"),
             "description": weather_res.get("description"),
@@ -211,6 +212,47 @@ WEATHER_CODES = {
     96: "Thunderstorm with Slight Hail",
     99: "Thunderstorm with Heavy Hail"
 }
+
+def _get_raw_weather(lat: float, lon: float) -> dict:
+    try:
+        weather_url = (
+            f"https://api.open-meteo.com/v1/forecast?"
+            f"latitude={lat}&longitude={lon}"
+            f"&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code"
+            f"&current_weather=true"
+        )
+        response = _safe_get(weather_url, timeout=5)
+        response.raise_for_status()
+        data = response.json()
+        
+        if "current_weather" in data:
+            cw = data["current_weather"]
+            weather_code = int(cw.get("weathercode", 0))
+            description = WEATHER_CODES.get(weather_code, "Unknown Weather")
+            
+            return {
+                "temperature": cw.get("temperature"),
+                "windspeed": cw.get("windspeed") or data.get("current", {}).get("wind_speed_10m"),
+                "weathercode": weather_code,
+                "description": description,
+                "is_day": cw.get("is_day"),
+                "rain": data.get("current", {}).get("rain", 0.0),
+                "relative_humidity": data.get("current", {}).get("relative_humidity_2m", 50),
+            }
+        else:
+            raise Exception("Invalid response from weather service")
+    except Exception as e:
+        # Fallback weather data in case of API failure
+        return {
+            "temperature": 30.0,
+            "windspeed": 10.0,
+            "weathercode": 1,
+            "description": "Mainly Clear (Offline Fallback)",
+            "is_day": 1,
+            "rain": 0.0,
+            "relative_humidity": 55
+        }
+
 
 def find_nearest_district(lat: float, lon: float):
     if not districts_db:
@@ -637,53 +679,18 @@ def get_districts():
 @app.get("/api/weather")
 def get_weather(lat: float = Query(..., description="Latitude"), lon: float = Query(..., description="Longitude")):
     """Proxies request to Open-Meteo to fetch live weather data for the coordinates"""
+    weather_data = _get_raw_weather(lat, lon)
+    
     # Log search and update statewise repository in database
     try:
         district = find_nearest_district(lat, lon)
         district_name = district["name"] if district else None
         log_query_to_db(lat, lon, district_name, None, None)
-        update_statewise_repository(lat, lon)
+        update_statewise_repository(lat, lon, weather_res=weather_data)
     except Exception as e:
         print(f"Error updating statewise repository on weather fetch: {e}")
 
-    try:
-        weather_url = (
-            f"https://api.open-meteo.com/v1/forecast?"
-            f"latitude={lat}&longitude={lon}"
-            f"&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code"
-            f"&current_weather=true"
-        )
-        response = _safe_get(weather_url, timeout=5)
-        response.raise_for_status()
-        data = response.json()
-        
-        if "current_weather" in data:
-            cw = data["current_weather"]
-            weather_code = int(cw.get("weathercode", 0))
-            description = WEATHER_CODES.get(weather_code, "Unknown Weather")
-            
-            return {
-                "temperature": cw.get("temperature"),
-                "windspeed": cw.get("windspeed") or data.get("current", {}).get("wind_speed_10m"),
-                "weathercode": weather_code,
-                "description": description,
-                "is_day": cw.get("is_day"),
-                "rain": data.get("current", {}).get("rain", 0.0),
-                "relative_humidity": data.get("current", {}).get("relative_humidity_2m", 50),
-            }
-        else:
-            raise HTTPException(status_code=502, detail="Invalid response from weather service")
-    except Exception as e:
-        # Fallback weather data in case of API failure
-        return {
-            "temperature": 30.0,
-            "windspeed": 10.0,
-            "weathercode": 1,
-            "description": "Mainly Clear (Offline Fallback)",
-            "is_day": 1,
-            "rain": 0.0,
-            "relative_humidity": 55
-        }
+    return weather_data
 
 @app.get("/api/statewise-repository")
 def get_statewise_repository():
