@@ -595,9 +595,14 @@ export default function FarmerIntelligenceHub({
               >
                 {t(language, 'subscribe')}
               </button>
-              {smsResult && (
+              {smsResult && smsResult.delivery === 'sent' && (
                 <div className="rounded-lg bg-emerald-50 p-2 text-[11px] font-medium text-emerald-800">
                   {t(language, 'subscribed')} {smsResult.sample_sms}
+                </div>
+              )}
+              {smsResult && smsResult.delivery !== 'sent' && (
+                <div className="rounded-lg bg-rose-50 p-2 text-[11px] font-medium text-rose-800">
+                  Subscription logged, but SMS delivery failed: {smsResult.error || 'Check Twilio credentials.'}
                 </div>
               )}
             </form>
