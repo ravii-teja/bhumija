@@ -61,6 +61,22 @@ def log_query_to_db(lat: float, lon: float, district_name: Optional[str], place_
         except Exception as e:
             print(f"Error logging query to DB: {e}")
 
+def log_subscription_to_db(phone: str, lat: float, lon: float, language: str, status: str):
+    conn = get_db_connection()
+    if conn:
+        try:
+            cursor = conn.cursor()
+            cursor.execute("""
+                INSERT INTO subscriptions (phone, lat, lon, language, status, created_at)
+                VALUES (%s, %s, %s, %s, %s, CURRENT_TIMESTAMP);
+            """, (phone, lat, lon, language, status))
+            conn.commit()
+            cursor.close()
+            conn.close()
+            print("Logged subscription to DB")
+        except Exception as e:
+            print(f"Error logging subscription to DB: {e}")
+
 def update_statewise_repository(lat: float, lon: float):
     district = find_nearest_district(lat, lon)
     if not district or not district.get("state"):
@@ -498,6 +514,8 @@ async def farmer_sms_subscribe(
         agro=agro,
         place_name=place_name.strip() if place_name else None,
     )
+    # Log subscription to Supabase
+    log_subscription_to_db(cleaned, lat, lon, lang, result.get("delivery", "subscribed"))
     return result
 
 
