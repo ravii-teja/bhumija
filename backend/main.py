@@ -4,6 +4,7 @@ import math
 import io
 import requests
 import certifi
+import psycopg2
 from typing import Optional
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Query, UploadFile, File, Form, Header
@@ -28,6 +29,111 @@ load_dotenv()
 MAPMYINDIA_API_KEY = os.getenv("MAPMYINDIA_API_KEY", "")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 AGROMONITORING_API_KEY = os.getenv("AGROMONITORING_API_KEY", "")
+
+def get_db_connection():
+    try:
+        conn = psycopg2.connect(
+            host=os.getenv("SUPABASE_DB_HOST"),
+            database=os.getenv("SUPABASE_DB_NAME"),
+            user=os.getenv("SUPABASE_DB_USER"),
+            password=os.getenv("SUPABASE_DB_PASS"),
+            port=os.getenv("SUPABASE_DB_PORT", "5432"),
+            sslmode="require"
+        )
+        return conn
+    except Exception as e:
+        print(f"Database connection error: {e}")
+        return None
+
+def log_query_to_db(lat: float, lon: float, district_name: Optional[str], place_name: Optional[str], place_address: Optional[str]):
+    conn = get_db_connection()
+    if conn:
+        try:
+            cursor = conn.cursor()
+            cursor.execute("""
+                INSERT INTO queries (lat, lon, district, place_name, place_address, created_at)
+                VALUES (%s, %s, %s, %s, %s, CURRENT_TIMESTAMP);
+            """, (lat, lon, district_name, place_name, place_address))
+            conn.commit()
+            cursor.close()
+            conn.close()
+            print("Logged query to DB")
+        except Exception as e:
+            print(f"Error logging query to DB: {e}")
+
+def update_statewise_repository(lat: float, lon: float):
+    district = find_nearest_district(lat, lon)
+    if not district or not district.get("state"):
+        return
+    
+    state_name = district["state"]
+    soil_type = district.get("soil_type", "Unknown")
+    primary_crops = district.get("primary_crops", [])
+    
+    # Get current weather
+    try:
+        weather_res = get_weather(lat, lon)
+        weather_info = {
+            "temperature": weather_res.get("temperature"),
+            "description": weather_res.get("description"),
+            "rain": weather_res.get("rain"),
+            "relative_humidity": weather_res.get("relative_humidity")
+        }
+    except Exception:
+        weather_info = {"temperature": 30.0, "description": "Sunny", "rain": 0.0, "relative_humidity": 50}
+        
+    # Generate water resources via Gemini
+    water_resources = []
+    if GEMINI_API_KEY:
+        try:
+            client = genai.Client(api_key=GEMINI_API_KEY)
+            prompt = (
+                f"Identify the main agricultural water sources (rivers, dams, canals, or lakes) "
+                f"providing irrigation to {district['name']} in {state_name}, India. "
+                f"Return ONLY a JSON list of strings (e.g., [\"River A\", \"Dam B\"]). No explanation, no markdown blocks."
+            )
+            response = client.models.generate_content(model="gemini-2.5-flash", contents=[prompt])
+            text = response.text.strip()
+            # Clean markdown formatting if any
+            if text.startswith("```"):
+                text = text.split("\n", 1)[1].rsplit("```", 1)[0].strip()
+            if text.lower().startswith("json"):
+                text = text[4:].strip()
+            water_resources = json.loads(text)
+        except Exception as e:
+            print(f"Error calling Gemini for water resources: {e}")
+            water_resources = ["Local Ground Water", "Monsoon Rainfed"]
+    else:
+        water_resources = ["Local Ground Water", "Monsoon Rainfed"]
+        
+    # Save/update statewise_repository in database
+    conn = get_db_connection()
+    if conn:
+        try:
+            cursor = conn.cursor()
+            cursor.execute("""
+                INSERT INTO statewise_repository (state, crops, weather_data, soil_type, water_resources, last_updated)
+                VALUES (%s, %s, %s, %s, %s, CURRENT_TIMESTAMP)
+                ON CONFLICT (state) DO UPDATE 
+                SET crops = EXCLUDED.crops,
+                    weather_data = EXCLUDED.weather_data,
+                    soil_type = EXCLUDED.soil_type,
+                    water_resources = EXCLUDED.water_resources,
+                    last_updated = CURRENT_TIMESTAMP;
+            """, (
+                state_name,
+                json.dumps(primary_crops),
+                json.dumps(weather_info),
+                soil_type,
+                json.dumps(water_resources)
+            ))
+            conn.commit()
+            cursor.close()
+            conn.close()
+            print(f"Updated statewise repository for state: {state_name}")
+        except Exception as e:
+            print(f"Error saving to statewise_repository: {e}")
+
 
 app = FastAPI(title="Bhumija API Backend", description="AI-Powered Super El Niño Resilience Engine Backend")
 
@@ -513,6 +619,15 @@ def get_districts():
 @app.get("/api/weather")
 def get_weather(lat: float = Query(..., description="Latitude"), lon: float = Query(..., description="Longitude")):
     """Proxies request to Open-Meteo to fetch live weather data for the coordinates"""
+    # Log search and update statewise repository in database
+    try:
+        district = find_nearest_district(lat, lon)
+        district_name = district["name"] if district else None
+        log_query_to_db(lat, lon, district_name, None, None)
+        update_statewise_repository(lat, lon)
+    except Exception as e:
+        print(f"Error updating statewise repository on weather fetch: {e}")
+
     try:
         weather_url = (
             f"https://api.open-meteo.com/v1/forecast?"
@@ -551,6 +666,34 @@ def get_weather(lat: float = Query(..., description="Latitude"), lon: float = Qu
             "rain": 0.0,
             "relative_humidity": 55
         }
+
+@app.get("/api/statewise-repository")
+def get_statewise_repository():
+    conn = get_db_connection()
+    if not conn:
+        raise HTTPException(status_code=500, detail="Database connection failed")
+    try:
+        cursor = conn.cursor()
+        cursor.execute("SELECT state, crops, weather_data, soil_type, water_resources, last_updated FROM statewise_repository ORDER BY state ASC;")
+        rows = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        
+        repo_data = []
+        for row in rows:
+            repo_data.append({
+                "state": row[0],
+                "crops": row[1] if isinstance(row[1], list) else json.loads(row[1] or "[]"),
+                "weather_data": row[2] if isinstance(row[2], dict) else json.loads(row[2] or "{}"),
+                "soil_type": row[3],
+                "water_resources": row[4] if isinstance(row[4], list) else json.loads(row[4] or "[]"),
+                "last_updated": row[5].isoformat() if row[5] else None
+            })
+        return repo_data
+    except Exception as e:
+        print(f"Error fetching statewise repository: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.post("/api/chat")
 async def chat_advisory(

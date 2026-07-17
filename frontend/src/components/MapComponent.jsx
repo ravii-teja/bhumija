@@ -10,7 +10,25 @@ const OVERLAY_MODES = [
   { id: 'monsoon', label: 'Monsoon', short: 'Rain' },
   { id: 'soil', label: 'Soil', short: 'Soil' },
   { id: 'composite', label: 'All layers', short: 'All' },
+  { id: 'statewise', label: 'State Repository', short: 'State Repo' },
 ];
+
+const STATE_COORDINATES = {
+  'Maharashtra': { lat: 19.7515, lon: 75.7139 },
+  'Andhra Pradesh': { lat: 15.9129, lon: 79.7400 },
+  'Karnataka': { lat: 15.3173, lon: 75.7139 },
+  'Rajasthan': { lat: 27.0238, lon: 74.2179 },
+  'Uttar Pradesh': { lat: 26.8467, lon: 80.9462 },
+  'Madhya Pradesh': { lat: 22.9734, lon: 78.6569 },
+  'Gujarat': { lat: 22.2587, lon: 71.1924 },
+  'Tamil Nadu': { lat: 11.1271, lon: 78.6569 },
+  'Telangana': { lat: 18.1124, lon: 79.0193 },
+  'Punjab': { lat: 31.1471, lon: 75.3412 },
+  'Haryana': { lat: 29.0588, lon: 76.0856 },
+  'Bihar': { lat: 25.0961, lon: 85.3131 },
+  'West Bengal': { lat: 22.9868, lon: 87.8550 },
+  'Odisha': { lat: 20.9517, lon: 85.0985 },
+};
 
 function districtColor(district, overlayMode, agroMetrics) {
   const metric = agroMetrics?.find((m) => m.district_id === district.id);
@@ -46,6 +64,7 @@ export default function MapComponent({
   agroData,
   loadingWeather,
   loadingAgro,
+  statewiseRepo,
   searchBar,
 }) {
   const mapContainerRef = useRef(null);
@@ -159,7 +178,7 @@ export default function MapComponent({
 
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || !mapReady || !districts?.length) return;
+    if (!map || !mapReady) return;
 
     overlayLayersRef.current.forEach((layer) => {
       try {
@@ -169,6 +188,56 @@ export default function MapComponent({
       }
     });
     overlayLayersRef.current = [];
+
+    if (overlayMode === 'statewise') {
+      statewiseRepo?.forEach((item) => {
+        const coords = STATE_COORDINATES[item.state];
+        if (!coords) return;
+
+        try {
+          const circle = new window.mappls.Circle({
+            map,
+            center: { lat: coords.lat, lng: coords.lon },
+            radius: 120000,
+            strokeColor: '#3b82f6',
+            strokeOpacity: 0.95,
+            strokeWeight: 2,
+            fillColor: '#60a5fa',
+            fillOpacity: 0.45,
+          });
+
+          const cropsList = item.crops ? item.crops.join(', ') : '—';
+          const weatherDesc = item.weather_data && item.weather_data.temperature != null
+            ? `${item.weather_data.temperature}°C · ${item.weather_data.description || 'Sunny'}`
+            : '—';
+          const waterList = item.water_resources ? item.water_resources.join(', ') : '—';
+
+          circle.bindPopup?.(
+            `<div style="font-family:Roboto,Inter,sans-serif;padding:6px;max-width:240px;line-height:1.4;">
+              <strong style="font-size:13px;color:#1e3a8a;display:block;margin-bottom:4px;">${item.state} Repository</strong>
+              <div style="font-size:11px;margin-top:4px;"><strong>Crops:</strong> ${cropsList}</div>
+              <div style="font-size:11px;margin-top:2px;"><strong>Weather:</strong> ${weatherDesc}</div>
+              <div style="font-size:11px;margin-top:2px;"><strong>Soil:</strong> ${item.soil_type || '—'}</div>
+              <div style="font-size:11px;margin-top:2px;"><strong>Water Sources:</strong> ${waterList}</div>
+              <div style="font-size:9px;color:#78716c;margin-top:6px;text-align:right;">Updated: ${item.last_updated ? new Date(item.last_updated).toLocaleDateString() : '—'}</div>
+            </div>`
+          );
+
+          circle.addListener('click', (event) => {
+            if (event?.stopPropagation) event.stopPropagation();
+            map.setCenter({ lat: coords.lat, lng: coords.lon });
+            map.setZoom(7);
+          });
+
+          overlayLayersRef.current.push(circle);
+        } catch (error) {
+          console.warn('Could not render state circle:', item.state, error);
+        }
+      });
+      return;
+    }
+
+    if (!districts?.length) return;
 
     districts.forEach((district) => {
       const colors = districtColor(district, overlayMode, agroMetrics);
@@ -207,7 +276,7 @@ export default function MapComponent({
         console.warn('Could not render district circle:', district.name, error);
       }
     });
-  }, [districts, mapReady, overlayMode, agroMetrics]);
+  }, [districts, mapReady, overlayMode, agroMetrics, statewiseRepo]);
 
   useEffect(() => {
     const map = mapRef.current;

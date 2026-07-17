@@ -26,6 +26,18 @@ export default function App() {
   const [supportedLanguages, setSupportedLanguages] = useState({});
   const [panelOpen, setPanelOpen] = useState(true);
   const [mobileTab, setMobileTab] = useState('map');
+  const [statewiseRepo, setStatewiseRepo] = useState([]);
+
+  const fetchStatewiseRepo = async () => {
+    try {
+      const res = await fetch('/api/statewise-repository');
+      if (res.ok) {
+        setStatewiseRepo(await res.json());
+      }
+    } catch (error) {
+      console.error('Failed to fetch statewise repository:', error);
+    }
+  };
 
   useEffect(() => {
     setPanelOpen(!isMobile);
@@ -57,6 +69,8 @@ export default function App() {
             setAgroMetrics(overlay.metrics || []);
           }
         }
+
+        fetchStatewiseRepo();
       } catch (error) {
         console.error('Failed to bootstrap app:', error);
       }
@@ -110,6 +124,8 @@ export default function App() {
       if (agroRes.ok) {
         setAgroData(await agroRes.json());
       }
+      // Re-fetch statewise repository to show the updated data
+      fetchStatewiseRepo();
     } catch (error) {
       console.error('Failed to fetch location data:', error);
     } finally {
@@ -146,6 +162,7 @@ export default function App() {
           agroData={agroData}
           loadingWeather={loadingWeather}
           loadingAgro={loadingAgro}
+          statewiseRepo={statewiseRepo}
           searchBar={
             <SearchBar
               districts={districts}
