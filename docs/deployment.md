@@ -235,7 +235,13 @@ App.handleSelectLocation(lat, lon, district?, { name, address })
 | `TWILIO_SMS_FROM` | Fallback sender phone number | Twilio Console → Phone Numbers (e.g. `+18777804236`) |
 | `TWILIO_API_KEY_SID` | Twilio API authentication | Twilio Console → API Keys (`SK…`) |
 | `TWILIO_API_KEY_SECRET` | Twilio API key secret | Shown once when API key is created |
-| `TWILIO_AUTH_TOKEN` | Alternative auth (Account SID + token) | Twilio Console → Account Info (optional if using API key) |
+| `TWILIO_AUTH_TOKEN` | Alternative auth (Account SID + token) | Twilio Console -> Account Info (optional if using API key) |
+| `SUPABASE_DB_HOST` | Database connection host | Supabase Project Settings -> Database |
+| `SUPABASE_DB_NAME` | Database name (e.g. `postgres`) | Supabase Project Settings -> Database |
+| `SUPABASE_DB_USER` | Database connection user | Supabase Project Settings -> Database |
+| `SUPABASE_DB_PASS` | Database connection password | Set during Supabase project creation |
+| `SUPABASE_DB_PORT` | Database connection port (5432, or 6543 for transaction pooling) | Supabase Project Settings -> Database |
+
 
 ### Local setup
 
@@ -605,4 +611,18 @@ Summary of recent changes — full detail in [`content.md`](content.md).
 
 ---
 
-*Last updated: July 2026 — Bhumija v3 (voice stop, single SMS, any-city search, Open-Meteo fallbacks, smoke tests, ppt.md deck)*
+## 14. Phase 14: Supabase Logging & Infinite Recursion Fix (Operational Updates)
+
+During the integration of the database layer, the following critical updates were made to ensure production stability:
+
+1. **Unified Backend Supabase Logging:** 
+   To ensure robustness across all user interfaces (both Assistant and Hub components), subscription logging was moved to the backend. The backend endpoint `POST /api/farmer/sms-subscribe` now directly inserts logs into the `subscriptions` table in Supabase via the `log_subscription_to_db()` helper after the Twilio welcome message is dispatched.
+2. **Infinite Recursion Resolution:** 
+   A stack overflow loop between `/api/weather` and `update_statewise_repository()` was resolved. The weather data query logic was extracted into `_get_raw_weather()`, and `update_statewise_repository()` was updated to accept pre-fetched weather data as an optional argument (`weather_res`) to prevent it from re-querying the API.
+3. **Vercel Read-Only File System Adaptation:**
+   Subscriptions and health log updates fall back to writeable `/tmp/` files in serverless/Vercel environments (using `os.getenv("VERCEL")`), preventing filesystem write errors from crashing API endpoints prior to executing Twilio actions.
+
+---
+
+*Last updated: July 2026 — Bhumija v4 (Supabase Backend Persistence, Weather Recursion Fix, Serverless /tmp adaptation)*
+
