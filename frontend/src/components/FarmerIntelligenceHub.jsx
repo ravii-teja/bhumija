@@ -304,9 +304,21 @@ export default function FarmerIntelligenceHub({
     form.append('lang', language);
     try {
       const res = await fetch('/api/farmer/sms-subscribe', { method: 'POST', body: form });
-      if (res.ok) setSmsResult(await res.json());
+      if (res.ok) {
+        setSmsResult(await res.json());
+      } else {
+        const errorData = await res.json().catch(() => ({}));
+        setSmsResult({
+          delivery: 'failed',
+          error: errorData.detail || `Server error: ${res.status}`
+        });
+      }
     } catch (err) {
       console.error('SMS subscribe failed:', err);
+      setSmsResult({
+        delivery: 'failed',
+        error: 'Network connection failed.'
+      });
     }
   };
 
