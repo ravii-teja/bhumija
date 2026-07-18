@@ -110,7 +110,7 @@ def update_statewise_repository(lat: float, lon: float, weather_res: Optional[di
                 f"providing irrigation to {district['name']} in {state_name}, India. "
                 f"Return ONLY a JSON list of strings (e.g., [\"River A\", \"Dam B\"]). No explanation, no markdown blocks."
             )
-            response = client.models.generate_content(model="gemini-1.5-flash", contents=[prompt])
+            response = client.models.generate_content(model="gemini-flash-latest", contents=[prompt])
             text = response.text.strip()
             # Clean markdown formatting if any
             if text.startswith("```"):
@@ -407,7 +407,7 @@ def _gemini_generate(prompt: str, image: Optional[Image.Image] = None) -> Option
         payload: list = [prompt]
         if image:
             payload.append(image)
-        response = client.models.generate_content(model="gemini-1.5-flash", contents=payload)
+        response = client.models.generate_content(model="gemini-flash-latest", contents=payload)
         return response.text
     except Exception as exc:
         print(f"Gemini error: {exc}")
@@ -898,7 +898,7 @@ async def chat_advisory(
             if pil_image:
                 payload.append(pil_image)
 
-            response = client.models.generate_content(model="gemini-1.5-flash", contents=payload)
+            response = client.models.generate_content(model="gemini-flash-latest", contents=payload)
 
             return {
                 "response": response.text,
