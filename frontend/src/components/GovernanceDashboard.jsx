@@ -11,8 +11,8 @@ import {
   ShieldAlert,
   TrendingUp,
   Users,
-  FileText,
-  FileSpreadsheet,
+  Waves,
+  Calendar,
 } from 'lucide-react';
 
 export default function GovernanceDashboard({
@@ -158,42 +158,74 @@ export default function GovernanceDashboard({
       </div>
 
       <div className="flex-1 space-y-4 p-4 pb-20">
-        {/* GEE Satellite Crop Damage & Loss Quantifier Banner */}
+        {/* Gov Feature 2A: GEE Crop Damage & PMFBY Quantifier Banner */}
         {geeDamage && (
-          <div className="rounded-2xl border border-red-200 bg-gradient-to-br from-red-50/70 to-white p-4 shadow-sm">
-            <div className="flex items-center justify-between border-b border-red-100 pb-2">
-              <div className="flex items-center gap-2">
-                <ShieldAlert className="h-5 w-5 text-red-600" />
-                <div>
-                  <h3 className="text-xs font-bold text-stone-900">GEE Crop Damage & PMFBY Quantifier</h3>
-                  <p className="text-[10px] font-semibold text-red-700">Satellite-Verified Disaster Assessment</p>
+          <div className="space-y-3">
+            <div className="rounded-2xl border border-red-200 bg-gradient-to-br from-red-50/70 to-white p-4 shadow-sm">
+              <div className="flex items-center justify-between border-b border-red-100 pb-2">
+                <div className="flex items-center gap-2">
+                  <ShieldAlert className="h-5 w-5 text-red-600" />
+                  <div>
+                    <h3 className="text-xs font-bold text-stone-900">GEE Crop Damage & PMFBY Quantifier</h3>
+                    <p className="text-[10px] font-semibold text-red-700">2A. Satellite-Verified Disaster Assessment</p>
+                  </div>
+                </div>
+                <span className="rounded-full bg-red-600 px-2.5 py-0.5 text-[10px] font-extrabold text-white">
+                  {geeDamage.damage_percentage}% Acreage Affected
+                </span>
+              </div>
+
+              <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
+                <div className="rounded-xl border border-stone-200 bg-white p-2.5">
+                  <span className="text-[10px] font-bold text-stone-400 uppercase">Estimated Loss Acreage</span>
+                  <p className="text-base font-black text-stone-900">{geeDamage.affected_acreage_acres?.toLocaleString()} <span className="text-xs font-semibold text-stone-500">Acres</span></p>
+                </div>
+                <div className="rounded-xl border border-stone-200 bg-white p-2.5">
+                  <span className="text-[10px] font-bold text-stone-400 uppercase">Impacted Smallholders</span>
+                  <p className="text-base font-black text-stone-900">{geeDamage.estimated_farmers_impacted?.toLocaleString()} <span className="text-xs font-semibold text-stone-500">Farmers</span></p>
                 </div>
               </div>
-              <span className="rounded-full bg-red-600 px-2.5 py-0.5 text-[10px] font-extrabold text-white">
-                {geeDamage.damage_percentage}% Acreage Affected
-              </span>
-            </div>
 
-            <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
-              <div className="rounded-xl border border-stone-200 bg-white p-2.5">
-                <span className="text-[10px] font-bold text-stone-400 uppercase">Estimated Loss Acreage</span>
-                <p className="text-base font-black text-stone-900">{geeDamage.affected_acreage_acres?.toLocaleString()} <span className="text-xs font-semibold text-stone-500">Acres</span></p>
-              </div>
-              <div className="rounded-xl border border-stone-200 bg-white p-2.5">
-                <span className="text-[10px] font-bold text-stone-400 uppercase">Impacted Smallholders</span>
-                <p className="text-base font-black text-stone-900">{geeDamage.estimated_farmers_impacted?.toLocaleString()} <span className="text-xs font-semibold text-stone-500">Farmers</span></p>
+              <div className="mt-2.5 rounded-xl border border-red-200 bg-red-50 p-2.5 text-[11px] font-semibold text-red-900">
+                {geeDamage.pmfby_severity_level}
               </div>
             </div>
 
-            <div className="mt-2.5 rounded-xl border border-red-200 bg-red-50 p-2.5 text-[11px] font-semibold text-red-900">
-              {geeDamage.pmfby_severity_level}
+            {/* Gov Features 2B & 2C Grid */}
+            <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+              {/* Gov Feature 2B: Surface Water & Farm Pond Stress Tracker */}
+              <div className="rounded-2xl border border-blue-200 bg-blue-50/70 p-3.5 text-xs shadow-2xs">
+                <div className="flex items-center justify-between border-b border-blue-100 pb-1.5">
+                  <div className="flex items-center gap-1.5 font-bold text-blue-900">
+                    <Waves className="h-4 w-4 text-blue-600" />
+                    <span>2B. Surface Water & Pond Stress</span>
+                  </div>
+                  <span className="rounded bg-blue-100 px-2 py-0.5 text-[10px] font-extrabold text-blue-800">
+                    {geeDamage.surface_water_depletion_pct}% Depleted
+                  </span>
+                </div>
+                <p className="mt-2 font-semibold text-blue-950">{geeDamage.reservoir_status}</p>
+              </div>
+
+              {/* Gov Feature 2C: Monsoon Onset & Sowing Contingency Tracker */}
+              <div className="rounded-2xl border border-amber-200 bg-amber-50/70 p-3.5 text-xs shadow-2xs">
+                <div className="flex items-center justify-between border-b border-amber-100 pb-1.5">
+                  <div className="flex items-center gap-1.5 font-bold text-amber-900">
+                    <Calendar className="h-4 w-4 text-amber-600" />
+                    <span>2C. Monsoon Delay & Sowing Shift</span>
+                  </div>
+                  <span className="rounded bg-amber-100 px-2 py-0.5 text-[10px] font-extrabold text-amber-800">
+                    {geeDamage.monsoon_delay_days} Days Delay
+                  </span>
+                </div>
+                <p className="mt-2 font-semibold text-amber-950">{geeDamage.sowing_contingency_status}</p>
+              </div>
             </div>
           </div>
         )}
 
         {/* KPI Cards Grid */}
         <div className="grid grid-cols-2 gap-3">
-          {/* Potential Savings KPI */}
           <div className="group relative rounded-2xl border border-stone-200/90 bg-white p-3.5 shadow-sm transition hover:shadow-md cursor-help">
             <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-stone-500">
               <TrendingUp className="h-4 w-4 text-emerald-600" />
@@ -205,7 +237,6 @@ export default function GovernanceDashboard({
             <p className="mt-1 text-[10px] font-medium text-stone-500">With timely crop shifting</p>
           </div>
 
-          {/* Impacted Farmers KPI */}
           <div className="group relative rounded-2xl border border-stone-200/90 bg-white p-3.5 shadow-sm transition hover:shadow-md cursor-help">
             <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-stone-500">
               <Users className="h-4 w-4 text-blue-600" />
@@ -232,33 +263,6 @@ export default function GovernanceDashboard({
                   <div
                     key={idx}
                     onClick={() => toggleStep('first', idx)}
-                    className={`flex items-start gap-2.5 rounded-xl border p-2.5 text-xs font-medium cursor-pointer transition ${
-                      isDone ? 'border-emerald-200 bg-emerald-50 text-emerald-900' : 'border-stone-200 bg-stone-50 text-stone-700 hover:bg-stone-100'
-                    }`}
-                  >
-                    <CheckCircle2 className={`h-4 w-4 shrink-0 mt-0.5 ${isDone ? 'text-emerald-600' : 'text-stone-300'}`} />
-                    <span>{step}</span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* Government Action Steps */}
-        {data.gov_steps && data.gov_steps.length > 0 && (
-          <div className="rounded-2xl border border-stone-200 bg-white p-4 shadow-sm">
-            <div className="flex items-center justify-between border-b border-stone-100 pb-2">
-              <h3 className="text-xs font-bold text-stone-900">District Contingency Checklist</h3>
-              <span className="text-[10px] font-bold text-stone-400">{govProgress}% Done</span>
-            </div>
-            <div className="mt-3 space-y-2">
-              {data.gov_steps.map((step, idx) => {
-                const isDone = completedSteps[`gov-${idx}`];
-                return (
-                  <div
-                    key={idx}
-                    onClick={() => toggleStep('gov', idx)}
                     className={`flex items-start gap-2.5 rounded-xl border p-2.5 text-xs font-medium cursor-pointer transition ${
                       isDone ? 'border-emerald-200 bg-emerald-50 text-emerald-900' : 'border-stone-200 bg-stone-50 text-stone-700 hover:bg-stone-100'
                     }`}
