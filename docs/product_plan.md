@@ -37,95 +37,74 @@ Project Bhumija prioritizes India's rainfed zones, specifically tracking:
   - Rayalaseema & North Interior Karnataka
   - Western Rajasthan & Bundelkhand (Uttar Pradesh / Madhya Pradesh)
 
-4. CORE DATA POINTS FOR INTEGRATION
+4. CORE DATA POINTS & SATELLITE TELEMETRY (GEE INTEGRATION)
 --------------------------------------------------------------------------------
-To feed the AI contextual layer, the application aggregates or infers:
-1. Root Zone Soil Moisture (RZSM) to determine crop stress levels.
-2. Vegetation Index (NDVI) tracking to pinpoint localized crop failure early.
-3. Shifting monsoon onset/offset boundaries across specific sub-districts.
-4. Historical 5-year acreage metrics vs. current sowing trends.
-5. Local structural capacities (reservoirs, farm ponds, groundwater levels).
-6. weather api, soil, india geograpy, crop type, water levels or sources neaby if avaiable, seasonal aspects of indian crops. 
+To feed the AI contextual layer, the application aggregates real-time satellite telemetry:
+1. Root Zone Soil Moisture (SMAP SPL3SMP_E) to determine crop moisture stress levels.
+2. 5-Year Historical Vegetation Index (Sentinel-2 NDVI Anomaly 2021–2025) tracking early crop failure.
+3. Evapotranspiration & Daily Water Loss Index (MODIS/061/MOD16A2 & ERA5 Reanalysis).
+4. All-Weather Flood & Waterlogging Radar Scan (Sentinel-1 SAR Radar COPERNICUS/S1_GRD).
+5. Surface Water & Farm Pond (Shettale) Depletion Index (JRC Global Surface Water).
+6. Monsoon Onset & Sowing Shift Delay Tracker (CHIRPS Daily Satellite Rainfall).
 
 5. COMPLETE LIST OF APIs, MODELS, & TOOLS
 --------------------------------------------------------------------------------
-The backend and frontend are entirely optimized for a FREE-TIER PROTOTYPE.
+The backend and frontend are entirely optimized for a FREE-TIER PROTOTYPE & SCALABLE PRODUCTION.
 
 AI Brain & Foundation Models:
-* Google Gemini 2.5 Flash API (via Google AI Studio): Handles multi-modal inputs 
-  (text chat + uploaded field/soil imagery). Generous free tier: 15 Requests 
-  Per Minute (RPM) / 1,500 Requests Per Day (RPD).
+* Google Gemini 3.1 Flash Lite API (via Google AI Studio): Handles multi-modal inputs 
+  (text chat + uploaded field/soil imagery) with high throughput and zero rate limit errors.
 
-Specialized Agritech Models (For Scale):
-* Google Agricultural Understanding (ALU) API: For automated farm field 
-  boundary delineation and mapping across rural India.
-* Google Agricultural Monitoring and Event Detection (AMED) API: Tracks 
-  crop types, field sizes, and precise sowing/harvesting dates every 15 days.
-* Google NeuralGCM Model: Open-source, lightweight global physics-AI climate model 
-  capable of running locally on a laptop to predict monsoon shifts.
-* Google SEEDS Framework: Generative weather-forecasting architecture for cost-efficient 
-  ensemble forecasting.
+Geospatial & Satellite Layers:
+* Google Earth Engine (GEE): Multi-satellite array ingesting Sentinel-2 (NDVI + 5-Yr Baseline), 
+  NASA SMAP (Soil Moisture), Sentinel-1 SAR (Flood Radar), MODIS (Evapotranspiration), 
+  JRC Surface Water, and CHIRPS Rainfall. Supports headless GCP Service Account authentication.
+* MapMyIndia (Mappls) v3.0 Web SDK: Pure vector map layer displaying risk zones and farm pins.
+* Open-Meteo API: Free weather forecasting layer pulling live temperature, humidity, and rain.
 
-Geospatial Data Layers:
-* Google Earth Engine (GEE): Free for research. Streamlines ingestion of MODIS 
-  (MOD13Q1) or Sentinel-2 (for NDVI) and SMAP satellite arrays (for soil moisture).
-* Open-Meteo API: Completely free weather forecasting layer used without api keys 
-  to pull live temperature, windspeed, and rain data on the fly.
+Indic Regional Language System:
+* Native Multi-lingual Support: Telugu (తెలుగు), Hindi (हिंदी), Marathi (मराठी), Kannada (ಕನ್ನಡ), and English (en).
 
 6. CORE PROGRAMMING LIBRARIES & STACK
 --------------------------------------------------------------------------------
 Frontend (React + Vite + Tailwind):
 * react, react-dom  - Interactive user interface components.
-* leaflet, lucide-react - Mapping layout and icon visual assets.
+* lucide-react      - UI icon assets.
 * @vercel/analytics - Vercel usage stats tracker.
-* @supabase/supabase-js - Supabase client to record farmer queries and subscriptions.
+* @supabase/supabase-js - Supabase database client for logs and subscriptions.
 
 Backend (FastAPI + Python):
-* fastapi, uvicorn   - Serverless routing API framework.
+* fastapi, uvicorn   - Serverless API routing.
 * google-genai      - Official SDK to execute Gemini AI prompts (voice/image/chat).
+* earthengine-api   - Python SDK for Google Earth Engine satellite processing.
 * twilio            - SMS dispatch integration.
-* pillow            - Image diagnostic support.
-* requests, certifi - Meteorological telemetry integration.
+* pillow, certifi   - Image diagnostic and macOS SSL certificate trust bundle support.
 
 7. APP ARCHITECTURE & DATA FLOW
 --------------------------------------------------------------------------------
-The application is structured as a decoupled React client calling a serverless FastAPI backend:
+The application is structured as a decoupled React client calling a FastAPI backend:
 
 ```
 [React Frontend] ────(HTTP /api/* Proxy)────► [FastAPI Backend]
        │                                             │
-       ├─► Supabase: Log Search Queries              ├─► Google Gemini API
-       ├─► Supabase: Log SMS Subscriptions           ├─► Twilio SMS Delivery
-       └─► Vercel Analytics                          ├─► Agromonitoring API
+       ├─► Supabase: Log Search Queries              ├─► Google Gemini 3.1 Flash Lite API
+       ├─► Supabase: Log SMS Subscriptions           ├─► Google Earth Engine (Sentinel-2 / SMAP / SAR)
+       └─► Vercel Analytics                          ├─► Twilio SMS Delivery
                                                      └─► Open-Meteo API
 ```
 
-Data Flow Sequence:
-1. Farmer selects a location on the Mappls Map component (either by geocode search, GPS, or manual pin drops).
-2. The coordinates are matched to the nearest drought-vulnerable district.
-3. Live Open-Meteo and Agromonitoring weather/satellite telemetry is fetched for the location.
-4. The crops advice and alerts engine in the backend processes this data to recommend drought-resilient crops and calculate dry-spell alert badges.
-5. If the farmer subscribes to SMS alerts, a concise GSM-compliant SMS summary is built and sent via Twilio to the farmer's mobile phone, and logged to Supabase.
-
-8. DEPLOYMENT & SHARING PIPELINE
+8. DEPLOYMENT & CREDENTIALS PIPELINE
 --------------------------------------------------------------------------------
-* Git Repository: https://github.com/ravii-teja/bhumija
-* Deployment Platform: Vercel (React Static Build + Python Serverless Functions)
-* Supabase Backend: Cloud Database for search query analytics and subscriber tables.
-* Twilio SMS Integration: Indian standard phone numbers (e.g. 10-digit mobile) auto-normalized to E.164.
-use free apis where possible,
+* Git Branch: feature/gee-gemini-integration (Remote: https://github.com/ravii-teja/bhumija)
+* Local Dev Authentication: Auto-cached OAuth token (~/.config/earthengine/credentials).
+* Production Authentication: Headless GCP Service Account JSON key (`GEE_SERVICE_ACCOUNT` & `GEE_SERVICE_ACCOUNT_KEY_FILE`).
+* Secret Scanning: `gee_service_account.json` and `.env` added to `.gitignore` to prevent credential exposure.
 
 ================================================================================
-                    9. GOVERNMENT DASHBOARD & FUTURE ROADMAP
+                    9. GOVERNMENT DASHBOARD & GEE LOSS QUANTIFIER
 ================================================================================
-The Governance View leverages the same location-based parameters to provide administration-level insights:
-1. **Interactive District Impact Analytics**: Calculates impacted farmers and potential crop savings dynamically.
-2. **First Action Directives Checklist**: Interactive checklists for local administrative bodies and field workers.
-3. **Contingency Planning**: Leverages Gemini to synthesize district-specific recommendations based on soil types and weather anomalies.
-
-### Future Roadmap Features:
-* **One-Click District SMS Broadcast**: Broad-scale dispatch of localized, regional-language advisories to all registered farmers in a chosen district using Twilio.
-* **Vulnerability Heatmap Overlays**: Heatmap layers on the main map displaying live regional water stress indices and farmer vulnerability scores.
-* **PDF Contingency Plan Exporter**: One-click generation of print-ready PDF contingency reports for block-level officers.
-* **RSK Inventory & Asset Allocator**: Map tags showing available emergency resource levels (seeds, water tankers, soil hydrogels) at the nearest Rythu Seva Kendras.
-
+The Governance View leverages satellite parameters to provide administration-level insights:
+1. **GEE Crop Damage & PMFBY Quantifier**: Automatically calculates affected acreage, impacted smallholder count, and PMFBY insurance severity level.
+2. **Surface Water & Farm Pond Stress Tracker**: Tracks reservoir & check-dam depletion percentages for emergency tanker deployment.
+3. **Monsoon Onset Anomaly & Sowing Shift Tracker**: Tracks monsoon delay days and auto-triggers district contingency seed distribution directives.
+4. **1-Click Export Report**: Generates print-ready PDF contingency and crop loss reports for district collectors.

@@ -187,3 +187,60 @@ Search any city, village, or advisory district. MapMyIndia autosuggest with Mapp
     }
   ]
   ```
+
+---
+
+### 13. Google Earth Engine Farm Telemetry
+Ingests real-time Sentinel-2 (NDVI + 5-Yr Baseline), SMAP soil moisture, MODIS evapotranspiration, and Sentinel-1 SAR flood radar telemetry for farm coordinates.
+
+- **URL:** `/api/gee/insights`
+- **Method:** `GET`
+- **Query Parameters:**
+  - `lat` (float, required): Latitude
+  - `lon` (float, required): Longitude
+- **Response Body (JSON):**
+  ```json
+  {
+    "gee_active": true,
+    "source": "google_earth_engine",
+    "lat": 19.8762,
+    "lon": 75.3433,
+    "ndvi": 0.467,
+    "ndvi_5yr_baseline": 0.485,
+    "ndvi_anomaly_percent": -23.9,
+    "historical_vigor_status": "23.9% Below 5-Yr Average (Crop Stress)",
+    "soil_moisture_percentage": 14.2,
+    "evapotranspiration_mm_day": 4.2,
+    "irrigation_action": "Daily crop water loss is 4.2mm. Give a 15-minute drip irrigation before 8 AM tomorrow.",
+    "waterlogging_detected": false,
+    "flood_radar_status": "No Standing Water Detected (Field Clear)"
+  }
+  ```
+
+---
+
+### 14. GEE District Crop Damage & Loss Quantifier
+Generates GEE satellite-backed disaster assessment, crop loss acreage, impacted smallholders, and PMFBY severity level for government authorities.
+
+- **URL:** `/api/gee/damage-quantification`
+- **Method:** `GET`
+- **Query Parameters:**
+  - `district` (string, required): District name (e.g. `Marathwada`)
+  - `lat` (float, required): Latitude
+  - `lon` (float, required): Longitude
+- **Response Body (JSON):**
+  ```json
+  {
+    "district": "Marathwada",
+    "lat": 19.8762,
+    "lon": 75.3433,
+    "gee_verified": true,
+    "damage_percentage": 52.5,
+    "affected_acreage_acres": 23625,
+    "estimated_farmers_impacted": 33075,
+    "pmfby_severity_level": "High Severity (PMFBY Emergency Claims Recommended)",
+    "surface_water_depletion_pct": 42.5,
+    "monsoon_delay_days": 21,
+    "sowing_contingency_status": "Monsoon delayed by 21 days in Marathwada. Switch from Paddy/Cotton to short-duration Bajra & Tur."
+  }
+  ```
