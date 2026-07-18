@@ -98,7 +98,7 @@ def get_governance_insights(
                 f"}}\n"
                 f"Provide actionable, specific steps for local governance (e.g. naming the crops or soil-specific actions)."
             )
-            response = client.models.generate_content(model="gemini-flash-latest", contents=[prompt])
+            response = client.models.generate_content(model="gemini-3.1-flash-lite", contents=[prompt])
             text = response.text.strip()
             
             # Clean markdown formatting if any
