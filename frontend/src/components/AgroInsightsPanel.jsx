@@ -40,13 +40,15 @@ export default function AgroInsightsPanel({ agroData, loading }) {
     <div className="space-y-3 rounded-2xl border border-emerald-200/70 bg-gradient-to-br from-emerald-50/60 to-white p-4">
       <div className="flex items-center justify-between border-b border-emerald-100 pb-2">
         <div>
-          <h4 className="text-sm font-bold text-stone-900">Agromonitoring Intelligence</h4>
+          <h4 className="text-sm font-bold text-stone-900">
+            {agroData?.gee_telemetry?.gee_active ? "Google Earth Engine Satellite Intelligence" : "Satellite & Agro Intelligence"}
+          </h4>
           <p className="text-[10px] font-semibold uppercase tracking-wide text-emerald-700">
-            NDVI · Soil moisture · Monsoon rainfall
+            Sentinel-2 NDVI · SMAP Soil moisture · Monsoon rainfall
           </p>
         </div>
         <span className="rounded-full border border-emerald-200 bg-white px-2 py-0.5 text-[10px] font-bold text-emerald-700">
-          Satellite + Weather
+          {agroData?.gee_telemetry?.gee_active ? "GEE Satellite" : "Satellite + Weather"}
         </span>
       </div>
 
