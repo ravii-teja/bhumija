@@ -4,6 +4,7 @@ import { Analytics } from '@vercel/analytics/react';
 import SearchBar from './components/SearchBar';
 import MapComponent from './components/MapComponent';
 import BhumijaAssistant from './components/BhumijaAssistant';
+import GovernanceDashboard from './components/GovernanceDashboard';
 import MobileNavBar from './components/MobileNavBar';
 import BottomSheet from './components/BottomSheet';
 import { findDistrictByCoords } from './utils/mappls';
@@ -26,7 +27,9 @@ export default function App() {
   const [supportedLanguages, setSupportedLanguages] = useState({});
   const [panelOpen, setPanelOpen] = useState(true);
   const [mobileTab, setMobileTab] = useState('map');
+  const [activeTab, setActiveTab] = useState('farmer');
   const [statewiseRepo, setStatewiseRepo] = useState([]);
+
 
   const fetchStatewiseRepo = async () => {
     try {
@@ -146,6 +149,14 @@ export default function App() {
     />
   );
 
+  const governancePanel = (
+    <GovernanceDashboard
+      selectedLocation={selectedLocation}
+      weather={weather}
+      agroData={agroData}
+    />
+  );
+
   return (
     <div className="relative flex h-[100dvh] flex-col overflow-hidden bg-stone-900 font-sans text-stone-900 antialiased">
       <Analytics />
@@ -198,7 +209,7 @@ export default function App() {
               className="absolute z-40 flex h-10 w-10 items-center justify-center rounded-full border border-stone-200 bg-white shadow-lg transition hover:bg-stone-50"
               style={{
                 top: 'calc(0.75rem + env(safe-area-inset-top, 0px))',
-                right: panelOpen ? 'calc(min(100%, 380px) + 0.75rem)' : '0.75rem',
+                right: panelOpen ? 'calc(min(100%, 480px) + 0.75rem)' : '0.75rem',
               }}
               aria-label={panelOpen ? 'Hide assistant' : 'Show assistant'}
             >
@@ -206,15 +217,35 @@ export default function App() {
             </button>
 
             <aside
-              className={`absolute bottom-0 right-0 top-0 z-30 flex w-[min(100%,380px)] flex-col border-l border-stone-200/90 bg-white shadow-2xl transition-transform duration-300 ease-out ${
+              className={`absolute bottom-0 right-0 top-0 z-30 flex w-[min(100%,480px)] flex-col border-l border-stone-200/90 bg-white shadow-2xl transition-transform duration-300 ease-out ${
                 panelOpen ? 'translate-x-0' : 'translate-x-full'
               }`}
             >
-              <div className="shrink-0 border-b border-stone-100 px-4 py-3">
-                <h2 className="text-sm font-bold text-stone-900">Bhumija Assistant</h2>
-                <p className="text-[11px] text-stone-500">Voice · Alerts · Crops · Forecast</p>
+              <div className="shrink-0 border-b border-stone-200 bg-white p-2">
+                <div className="flex rounded-lg bg-stone-100 p-1">
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('farmer')}
+                    className={`flex-1 rounded-md py-1.5 text-center text-xs font-semibold transition ${
+                      activeTab === 'farmer' ? 'bg-white text-stone-900 shadow-sm' : 'text-stone-500 hover:text-stone-950'
+                    }`}
+                  >
+                    Farmer Advisory
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('governance')}
+                    className={`flex-1 rounded-md py-1.5 text-center text-xs font-semibold transition ${
+                      activeTab === 'governance' ? 'bg-white text-stone-900 shadow-sm' : 'text-stone-500 hover:text-stone-950'
+                    }`}
+                  >
+                    Governance
+                  </button>
+                </div>
               </div>
-              <div className="min-h-0 flex-1 overflow-hidden">{assistantPanel}</div>
+              <div className="min-h-0 flex-1 overflow-hidden">
+                {activeTab === 'farmer' ? assistantPanel : governancePanel}
+              </div>
             </aside>
           </>
         )}
@@ -231,6 +262,15 @@ export default function App() {
             tall
           >
             {assistantPanel}
+          </BottomSheet>
+          <BottomSheet
+            open={mobileTab === 'governance'}
+            onClose={() => setMobileTab('map')}
+            title="Governance Dashboard"
+            subtitle="Monsoon forecasts & water contingency steps"
+            tall
+          >
+            {governancePanel}
           </BottomSheet>
         </>
       )}

@@ -1,10 +1,12 @@
 import React from 'react';
-import { Map, MessageCircle } from 'lucide-react';
+import { Map, MessageCircle, Building2 } from 'lucide-react';
 
 const NAV_ITEMS = [
   { id: 'map', label: 'Map', icon: Map },
   { id: 'assistant', label: 'Assistant', icon: MessageCircle },
+  { id: 'governance', label: 'Governance', icon: Building2 },
 ];
+
 
 export default function MobileNavBar({ active, onChange }) {
   return (

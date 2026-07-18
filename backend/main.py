@@ -449,6 +449,33 @@ def agro_district_overlay():
     return {"available": True, "metrics": metrics}
 
 
+@app.get("/api/governance/insights")
+def governance_insights(
+    lat: float = Query(...),
+    lon: float = Query(...),
+):
+    """Fetch governance metrics and recommended steps for admins & first action bodies."""
+    district = find_nearest_district(lat, lon)
+    
+    weather = None
+    try:
+        weather = _get_raw_weather(lat, lon)
+    except Exception:
+        pass
+
+    agro_data = None
+    if AGROMONITORING_API_KEY:
+        try:
+            agro_data = get_location_insights(AGROMONITORING_API_KEY, lat, lon)
+        except Exception:
+            pass
+
+    from governance import get_governance_insights
+    insights = get_governance_insights(district, weather, agro_data)
+    return insights
+
+
+
 @app.get("/api/farmer/crop-recommend")
 def crop_recommend(
     lat: float = Query(...),

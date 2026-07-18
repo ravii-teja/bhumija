@@ -114,3 +114,18 @@ Data Flow Sequence:
 * Supabase Backend: Cloud Database for search query analytics and subscriber tables.
 * Twilio SMS Integration: Indian standard phone numbers (e.g. 10-digit mobile) auto-normalized to E.164.
 use free apis where possible,
+
+================================================================================
+                    9. GOVERNMENT DASHBOARD & FUTURE ROADMAP
+================================================================================
+The Governance View leverages the same location-based parameters to provide administration-level insights:
+1. **Interactive District Impact Analytics**: Calculates impacted farmers and potential crop savings dynamically.
+2. **First Action Directives Checklist**: Interactive checklists for local administrative bodies and field workers.
+3. **Contingency Planning**: Leverages Gemini to synthesize district-specific recommendations based on soil types and weather anomalies.
+
+### Future Roadmap Features:
+* **One-Click District SMS Broadcast**: Broad-scale dispatch of localized, regional-language advisories to all registered farmers in a chosen district using Twilio.
+* **Vulnerability Heatmap Overlays**: Heatmap layers on the main map displaying live regional water stress indices and farmer vulnerability scores.
+* **PDF Contingency Plan Exporter**: One-click generation of print-ready PDF contingency reports for block-level officers.
+* **RSK Inventory & Asset Allocator**: Map tags showing available emergency resource levels (seeds, water tankers, soil hydrogels) at the nearest Rythu Seva Kendras.
+
