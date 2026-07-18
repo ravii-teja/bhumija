@@ -14,6 +14,7 @@ import {
   X,
 } from 'lucide-react';
 import { supabase } from '../utils/supabase';
+import AgroInsightsPanel from './AgroInsightsPanel';
 
 const SPEECH_LANG = {
   en: 'en-IN',
@@ -535,6 +536,9 @@ export default function BhumijaAssistant({
                   </p>
                 </div>
               </div>
+            </div>
+            <div className="mt-2">
+              <AgroInsightsPanel agroData={agroData} loading={insightsLoading} />
             </div>
           </>
         ) : (
