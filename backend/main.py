@@ -12,7 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from PIL import Image
 from google import genai
 from agro_client import get_district_metrics, get_location_insights
-from gee_client import get_gee_farm_insights
+from gee_client import get_gee_farm_insights, get_gee_district_damage_quantification
 from twilio_sms import twilio_configured
 from farmer_intelligence import (
     SUPPORTED_LANGUAGES,
@@ -979,6 +979,16 @@ async def chat_advisory(
 def gee_farm_insights(lat: float = Query(..., description="Latitude"), lon: float = Query(..., description="Longitude")):
     """Returns Google Earth Engine Sentinel-2 NDVI and SMAP soil moisture metrics for given coordinates."""
     return get_gee_farm_insights(lat, lon)
+
+
+@app.get("/api/gee/damage-quantification")
+def gee_damage_quantification(
+    district: str = Query("Marathwada", description="District name"),
+    lat: float = Query(19.8762, description="Latitude"),
+    lon: float = Query(75.3433, description="Longitude")
+):
+    """Returns GEE-backed crop damage & PMFBY insurance loss quantification for government officials."""
+    return get_gee_district_damage_quantification(district, lat, lon)
 
 
 if __name__ == "__main__":

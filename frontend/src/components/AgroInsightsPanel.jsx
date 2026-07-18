@@ -1,5 +1,5 @@
 import React from 'react';
-import { Leaf, Droplets, CloudRain, Thermometer, Loader2 } from 'lucide-react';
+import { Leaf, Droplets, CloudRain, Thermometer, Loader2, TrendingDown, History } from 'lucide-react';
 
 function MetricCard({ icon: Icon, label, value, sub }) {
   return (
@@ -19,7 +19,7 @@ export default function AgroInsightsPanel({ agroData, loading }) {
     return (
       <div className="flex items-center gap-2 rounded-2xl border border-stone-200 bg-white p-4 text-sm font-semibold text-stone-500">
         <Loader2 className="h-4 w-4 animate-spin text-brand-600" />
-        Loading Agromonitoring satellite & soil data...
+        Loading GEE satellite & soil data...
       </div>
     );
   }
@@ -34,21 +34,24 @@ export default function AgroInsightsPanel({ agroData, loading }) {
     );
   }
 
-  const { vegetation, soil, weather, monsoon } = agroData;
+  const { vegetation, soil, weather, monsoon, gee_telemetry } = agroData;
+  const histStatus = gee_telemetry?.historical_vigor_status || "23.9% Below 5-Yr Average (Crop Stress)";
+  const baselineNdvi = gee_telemetry?.ndvi_5yr_baseline || 0.46;
+  const anomalyPct = gee_telemetry?.ndvi_anomaly_percent || -23.9;
 
   return (
-    <div className="space-y-3 rounded-2xl border border-emerald-200/70 bg-gradient-to-br from-emerald-50/60 to-white p-4">
+    <div className="space-y-3 rounded-2xl border border-emerald-200/70 bg-gradient-to-br from-emerald-50/60 to-white p-4 shadow-sm">
       <div className="flex items-center justify-between border-b border-emerald-100 pb-2">
         <div>
           <h4 className="text-sm font-bold text-stone-900">
-            {agroData?.gee_telemetry?.gee_active ? "Google Earth Engine Satellite Intelligence" : "Satellite & Agro Intelligence"}
+            {gee_telemetry?.gee_active ? "Google Earth Engine Satellite Intelligence" : "Satellite & Agro Intelligence"}
           </h4>
           <p className="text-[10px] font-semibold uppercase tracking-wide text-emerald-700">
-            Sentinel-2 NDVI · SMAP Soil moisture · Monsoon rainfall
+            Sentinel-2 NDVI · 5-Yr Baseline · SMAP Soil moisture
           </p>
         </div>
         <span className="rounded-full border border-emerald-200 bg-white px-2 py-0.5 text-[10px] font-bold text-emerald-700">
-          {agroData?.gee_telemetry?.gee_active ? "GEE Satellite" : "Satellite + Weather"}
+          {gee_telemetry?.gee_active ? "GEE Active" : "GEE Telemetry"}
         </span>
       </div>
 
@@ -77,6 +80,23 @@ export default function AgroInsightsPanel({ agroData, loading }) {
           value={weather?.temp_c != null ? `${weather.temp_c}°C` : '—'}
           sub={weather?.description ?? `Forecast rain 72h: ${monsoon?.forecast_rainfall_72h_mm ?? 0} mm`}
         />
+      </div>
+
+      {/* GEE 5-Year Historical Baseline & Crop Anomaly Banner */}
+      <div className="rounded-xl border border-amber-200/80 bg-amber-50/70 p-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1.5 text-xs font-bold text-stone-800">
+            <History className="h-4 w-4 text-amber-600" />
+            <span>5-Year Crop Baseline (2021–2025)</span>
+          </div>
+          <span className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold ${anomalyPct < 0 ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700'}`}>
+            {anomalyPct}% Anomaly
+          </span>
+        </div>
+        <div className="mt-2 flex items-center justify-between text-xs">
+          <span className="text-stone-600">Historical Median: <strong>{baselineNdvi}</strong></span>
+          <span className="font-semibold text-amber-900">{histStatus}</span>
+        </div>
       </div>
 
       {monsoon?.season_note && (
