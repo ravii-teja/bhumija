@@ -771,9 +771,11 @@ async def chat_advisory(
     """
     api_key = None
     if authorization and authorization.startswith("Bearer "):
-        api_key = authorization.split(" ")[1].strip()
-    if not api_key:
-        api_key = GEMINI_API_KEY
+        token = authorization.split(" ")[1].strip()
+        if token and token not in ("null", "undefined"):
+            api_key = token
+    if not api_key or api_key in ("null", "undefined"):
+        api_key = os.getenv("GEMINI_API_KEY", "") or GEMINI_API_KEY
 
     nearest_district = None
     weather_summary = "No weather data available."
