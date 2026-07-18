@@ -538,7 +538,7 @@ export default function BhumijaAssistant({
               </div>
             </div>
             <div className="mt-2">
-              <AgroInsightsPanel agroData={agroData} loading={insightsLoading} />
+              <AgroInsightsPanel agroData={agroData} loading={insightsLoading} language={language} />
             </div>
           </>
         ) : (
