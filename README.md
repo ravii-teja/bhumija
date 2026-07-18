@@ -50,14 +50,42 @@ When a farmer registers their phone number for dry-spell alert subscription:
 
 ---
 
+## How to Use Bhumija
+
+### 🌾 Farmer Advisory Mode
+1. **Locate your plot**: Select a district on the map or search for a location using the Search Bar at the top.
+2. **Consult Bhumija Assistant**: Use the right-hand panel (desktop) or tap "Assistant" (mobile bottom sheet) to:
+   - Ask crop and soil questions via **Text** or **Voice** (supports English, Hindi, Telugu, Marathi, and Kannada).
+   - Upload field photos to diagnose crop health issues.
+3. **SMS Alerts**: Submit a 10-digit mobile number to subscribe to automated weather and crop warnings via Twilio.
+
+### 🏛️ Government & Governance Dashboard
+1. **Toggle Mode**: Click the **"Governance"** tab in the desktop right sidebar or mobile navigation bar.
+2. **Analyze District Risks**: View live risk cards including **Impacted Farmers** counts and **Potential Savings** (INR Crores) based on regional El Niño forecasts.
+3. **Monitor Reservoir Storage**: Review the custom water level line indicator showing past averages, current volume, and projected dry-down trajectories under El Niño.
+4. **Inspect Historical Sowing Stats**: Review historical crop acreage and yields derived from Supabase for the active season.
+5. **Manage Contingency Action Plan**: Work through the checklists for district administrators and first-action field workers, marking off tasks as they are executed.
+
+---
+
+## Key Implemented Features
+* **Interactive Map & Overlays**: Real-time Leaflet mapping showing districts flagged for El Niño vulnerability.
+* **Indic Voice & Image Diagnostic Chat**: Multi-modal Gemini AI integration for crop health diagnosis and localized advice.
+* **Supabase Crop Yields Mapping Database**: Houses 6,800+ aggregated district-crop records since 2010 to fetch and analyze seasonal crop suitability on the fly.
+* **Google-Style Governance Dashboard**: Premium admin panel showing water storage indicators, savings calculators, and interactive checklist systems.
+* **Autosuggest Performance Optimization**: High-speed search query and geocoding caches to reduce latency on repeated autocomplete keystrokes.
+
+---
+
 ## Project structure
 
 ```
 bhumija/
 ├── api/index.py          # Vercel serverless entry (FastAPI)
 ├── backend/              # FastAPI app + district data & venv
+├── datasets/             # CSV crop dataset and citation details
 ├── frontend/             # React + Vite + Tailwind UI
-├── apis/                 # API contract docs
-├── docs/                 # Product plans, walkthroughs, and deployment docs
+├── docs/                 # Product plans, walkthroughs, presentation decks, and contracts
 └── vercel.json           # Vercel deployment config
 ```
+

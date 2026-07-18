@@ -480,8 +480,41 @@ def recommend_crops(
     weather: Optional[dict],
     language: str = "en",
 ) -> dict:
-    region = district.get("region", "default") if district else "default"
-    candidates = CROP_KNOWLEDGE.get(region, CROP_KNOWLEDGE["default"])
+    from governance import get_current_season, get_district_crop_metrics
+    current_season = get_current_season()
+    db_crops = []
+    if district:
+        db_crops = get_district_crop_metrics(district.get("state", ""), district.get("name", ""), current_season)
+
+    if db_crops:
+        candidates = []
+        for c in db_crops:
+            crop_type = c["type"].lower()
+            water_need = "Low-Medium"
+            duration_days = 90
+            
+            if "oilseed" in crop_type or "pulse" in crop_type:
+                water_need = "Low"
+                duration_days = 80
+            elif "cereal" in crop_type:
+                water_need = "Medium"
+                duration_days = 110
+            elif "fiber" in crop_type or "commercial" in crop_type:
+                water_need = "High"
+                duration_days = 140
+            
+            candidates.append({
+                "crop": c["crop"],
+                "score_base": 85 if c["area_ha"] > 10000 else 75,
+                "duration_days": duration_days,
+                "water_need": water_need,
+                "area_ha": c["area_ha"],
+                "yield": c["avg_yield"]
+            })
+    else:
+        region = district.get("region", "default") if district else "default"
+        candidates = CROP_KNOWLEDGE.get(region, CROP_KNOWLEDGE["default"])
+
 
     monsoon = agro.get("monsoon") or {}
     vegetation = agro.get("vegetation") or {}
@@ -501,13 +534,36 @@ def recommend_crops(
             score += 5
 
         score = max(0, min(100, score))
+        
+        # Determine specific advice reason based on name
+        crop_name = crop["crop"].lower()
+        soil = district.get("soil_type", "local soil") if district else "local soil"
+        
+        if "yield" in crop: # Database crop
+            avg_y = crop["yield"]
+            area_h = crop["area_ha"]
+            if "rice" in crop_name or "paddy" in crop_name:
+                reason = f"Traditionally covers {area_h:,.0f} ha. Under dry spells, switch to Alternate Wetting & Drying (AWD) to preserve standard yields (avg. {avg_y:.2f} t/ha)."
+            elif "cotton" in crop_name:
+                reason = f"Main commercial crop in district ({area_h:,.0f} ha). Severe dry spell reduces boll size; adopt micro-sprinklers to save avg. yield of {avg_y:.2f} t/ha."
+            elif "groundnut" in crop_name:
+                reason = f"Grown over {area_h:,.0f} ha. Requires gypsum application at pegging; protect soil root-zone to maintain {avg_y:.2f} t/ha yield."
+            elif "arhar" in crop_name or "pigeon" in crop_name or "tur" in crop_name:
+                reason = f"Highly suited pulse ({area_h:,.0f} ha, avg. {avg_y:.2f} t/ha). Intercrop with millets to optimize water use."
+            elif "soybean" in crop_name:
+                reason = f"Covers {area_h:,.0f} ha (avg. {avg_y:.2f} t/ha). Sow using Broad Bed Furrow (BBF) to conserve moisture and protect against cloudbursts."
+            else:
+                reason = f"Acreage: {area_h:,.0f} ha with avg. yield of {avg_y:.2f} t/ha. { 'Resilient choice under dry conditions' if crop['water_need'] == 'Low' else 'Requires supplement irrigation support' }."
+        else:
+            reason = _crop_reason(crop, dry_spell, district)
+
         recommendations.append(
             {
                 "crop": crop["crop"],
                 "suitability_score": score,
                 "duration_days": crop["duration_days"],
                 "water_requirement": crop["water_need"],
-                "reason_en": _crop_reason(crop, dry_spell, district),
+                "reason_en": reason,
             }
         )
 

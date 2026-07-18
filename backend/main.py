@@ -281,6 +281,9 @@ def _district_name_matches(place_name: str, place_address: str, district: dict) 
     return place_lower in district_name or district_name in haystack
 
 
+_search_query_cache = {}
+_geocode_cache = {}
+
 def _resolve_search_coordinates(
     place_name: str,
     place_address: str,
@@ -290,20 +293,16 @@ def _resolve_search_coordinates(
     """Resolve lat/lon for search hits — prefer geocode for cities when autosuggest omits coords."""
     latitude = item.get("latitude") or item.get("lat")
     longitude = item.get("longitude") or item.get("lng") or item.get("lon")
-    place_type = (item.get("type") or "").upper()
 
-    if latitude is None or longitude is None:
-        if matched_district and _district_name_matches(place_name, place_address, matched_district):
-            return matched_district["lat"], matched_district["lon"]
-        return _geocode_place(place_name, place_address)
+    # If coordinates are already provided by autosuggest, return them immediately
+    if latitude is not None and longitude is not None:
+        return float(latitude), float(longitude)
 
-    # Autosuggest often misplaces city centroids — prefer geocode for cities
-    if place_type in {"CITY", "STATE", "SUBCITY", "TOWN", "VILLAGE"} or len(place_name.split()) <= 2:
-        geo_lat, geo_lon = _geocode_place(place_name, place_address)
-        if geo_lat is not None and geo_lon is not None:
-            return geo_lat, geo_lon
+    if matched_district and _district_name_matches(place_name, place_address, matched_district):
+        return matched_district["lat"], matched_district["lon"]
 
-    return float(latitude), float(longitude)
+    return _geocode_place(place_name, place_address)
+
 
 
 def _match_local_district(place_name: str, place_address: str = ""):
@@ -348,6 +347,10 @@ def _geocode_open_meteo(name: str):
 
 def _geocode_place(place_name: str, place_address: str = ""):
     """Resolve coordinates via MapMyIndia, then Open-Meteo."""
+    cache_key = f"{place_name}||{place_address}".strip().lower()
+    if cache_key in _geocode_cache:
+        return _geocode_cache[cache_key]
+
     for query in (
         f"{place_name}, {place_address}, India".strip(", "),
         f"{place_name}, India",
@@ -355,8 +358,13 @@ def _geocode_place(place_name: str, place_address: str = ""):
     ):
         lat, lon = _geocode_mappls_address(query)
         if lat is not None and lon is not None:
+            _geocode_cache[cache_key] = (lat, lon)
             return lat, lon
-    return _geocode_open_meteo(place_name)
+            
+    res = _geocode_open_meteo(place_name)
+    _geocode_cache[cache_key] = res
+    return res
+
 
 
 def _geocode_mappls_address(address: str):
@@ -620,6 +628,10 @@ def search_places(
     if not MAPMYINDIA_API_KEY:
         raise HTTPException(status_code=503, detail="MapMyIndia API key not configured")
 
+    cache_key = f"{q.strip().lower()}||{lat}||{lon}"
+    if cache_key in _search_query_cache:
+        return _search_query_cache[cache_key]
+
     params = {
         "query": q,
         "access_token": MAPMYINDIA_API_KEY,
@@ -695,7 +707,9 @@ def search_places(
                 }
             )
 
-    return {"query": q, "results": results}
+    resp_payload = {"query": q, "results": results}
+    _search_query_cache[cache_key] = resp_payload
+    return resp_payload
 
 
 @app.get("/api/districts")
@@ -846,9 +860,28 @@ async def chat_advisory(
             )
 
             if nearest_district:
+                seasonal_crops = []
+                current_season = "Kharif"
+                try:
+                    from governance import get_current_season, get_district_crop_metrics
+                    current_season = get_current_season()
+                    seasonal_crops = get_district_crop_metrics(
+                        nearest_district.get("state", ""),
+                        nearest_district.get("name", ""),
+                        current_season
+                    )
+                except Exception as e:
+                    print(f"Error fetching crop yields for chat context: {e}")
+
+                crop_metrics_str = "Unavailable"
+                if seasonal_crops:
+                    crop_metrics_str = ", ".join([f"{c['crop']} (Acreage: {c['area_ha']:.0f} ha, Avg Yield: {c['avg_yield']:.2f} t/ha)" for c in seasonal_crops])
+
                 system_prompt += (
                     f"FARM CONTEXT:\n"
                     f"- Location: {nearest_district['name']}, {nearest_district['state']} ({nearest_district['region']})\n"
+                    f"- Current Season: {current_season}\n"
+                    f"- Historical crops for this season: {crop_metrics_str}\n"
                     f"- El Niño risk: {nearest_district['risk_level']}\n"
                     f"- Soil: {nearest_district['soil_type']}\n"
                     f"- Primary crops: {', '.join(nearest_district['primary_crops'])}\n"

@@ -133,23 +133,47 @@ export default function GovernanceDashboard({
 
       <div className="flex-1 space-y-4 p-4 pb-20">
         {/* KPI Cards Grid */}
-        <div className="grid grid-cols-2 gap-3">
-          {/* Potential Savings KPI */}
-          <div className="group relative rounded-2xl border border-stone-200/90 bg-white p-3.5 shadow-sm transition hover:shadow-md cursor-help">
-            <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-stone-500">
-              <TrendingUp className="h-4 w-4 text-emerald-600" />
-              Est. Savings
+        <div className="grid grid-cols-3 gap-2.5">
+          {/* El Niño Prediction Loss KPI */}
+          <div className="group relative rounded-2xl border border-stone-200/90 bg-white p-3 shadow-sm transition hover:shadow-md cursor-help">
+            <div className="flex items-center gap-1 text-[8.5px] font-extrabold uppercase tracking-wider text-stone-500">
+              <AlertTriangle className="h-3.5 w-3.5 text-red-600" />
+              El Niño Predicted Loss
             </div>
-            <div className="mt-2.5 text-xl font-black text-emerald-700">
-              ₹{data.potential_savings_crores} <span className="text-[11px] font-bold text-stone-500">Cr</span>
+            <div className="mt-2 text-base font-black text-red-600">
+              ₹{data.prediction_loss_crores} <span className="text-[10px] font-bold text-stone-400">Cr</span>
             </div>
-            <p className="mt-1 text-[10px] font-medium text-stone-500">With timely crop shifting</p>
+            <p className="mt-0.5 text-[9px] font-medium text-stone-400">Without intervention</p>
 
             {/* Hover Tooltip */}
-            <div className="hidden md:block absolute top-full left-0 z-50 mt-1 w-[190%] rounded-xl border border-stone-800 bg-stone-950 p-3 text-[10px] text-white opacity-0 transition-opacity duration-200 pointer-events-none group-hover:opacity-100 shadow-xl">
+            <div className="hidden md:block absolute top-full left-0 z-50 mt-1 w-[280%] rounded-xl border border-stone-850 bg-stone-950 p-3 text-[10px] text-white opacity-0 transition-opacity duration-200 pointer-events-none group-hover:opacity-100 shadow-xl">
+              <div className="font-bold text-red-400">Calculation Logic:</div>
+              <div className="mt-0.5 leading-relaxed text-stone-300">
+                Impacted Farmers ({data.impacted_farmers.toLocaleString()}) × Avg. baseline crop value loss (₹{data.risk_level === 'High' ? '40,000–60,000' : data.risk_level === 'Medium' ? '30,000–40,000' : '20,000–30,000'} per unit) without water contingency.
+              </div>
+              <div className="mt-2 border-t border-white/10 pt-1.5 font-bold text-red-400">References:</div>
+              <div className="mt-0.5 leading-relaxed text-stone-400">
+                Ministry of Agriculture & Farmers Welfare assessments of macro-drought crop damages in dryland zones.
+              </div>
+            </div>
+          </div>
+
+          {/* Potential Savings KPI */}
+          <div className="group relative rounded-2xl border border-stone-200/90 bg-white p-3 shadow-sm transition hover:shadow-md cursor-help">
+            <div className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-stone-500">
+              <TrendingUp className="h-3.5 w-3.5 text-emerald-600" />
+              Est. Savings
+            </div>
+            <div className="mt-2 text-base font-black text-emerald-700">
+              ₹{data.potential_savings_crores} <span className="text-[10px] font-bold text-stone-400">Cr</span>
+            </div>
+            <p className="mt-0.5 text-[9px] font-medium text-stone-400">With prevention steps</p>
+
+            {/* Hover Tooltip */}
+            <div className="hidden md:block absolute top-full left-1/2 -translate-x-1/2 z-50 mt-1 w-[280%] rounded-xl border border-stone-850 bg-stone-950 p-3 text-[10px] text-white opacity-0 transition-opacity duration-200 pointer-events-none group-hover:opacity-100 shadow-xl">
               <div className="font-bold text-emerald-400">Calculation Logic:</div>
               <div className="mt-0.5 leading-relaxed text-stone-300">
-                Impacted Farmers ({data.impacted_farmers.toLocaleString()}) × Avg. savings per farmer (₹{data.risk_level === 'High' ? '18,000' : data.risk_level === 'Medium' ? '15,000' : '10,000'} base adjusted for rainfall deficit).
+                Impacted Farmers ({data.impacted_farmers.toLocaleString()}) × Avg. savings per farmer (₹{data.risk_level === 'High' ? '18,000' : data.risk_level === 'Medium' ? '15,000' : '10,000'} base adjusted for rainfall deficit) via crop seed subsidies & moisture conservation.
               </div>
               <div className="mt-2 border-t border-white/10 pt-1.5 font-bold text-emerald-400">References:</div>
               <div className="mt-0.5 leading-relaxed text-stone-400">
@@ -159,18 +183,18 @@ export default function GovernanceDashboard({
           </div>
 
           {/* Impacted Farmers KPI */}
-          <div className="group relative rounded-2xl border border-stone-200/90 bg-white p-3.5 shadow-sm transition hover:shadow-md cursor-help">
-            <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-stone-500">
-              <Users className="h-4 w-4 text-blue-600" />
-              Impacted Farmers
+          <div className="group relative rounded-2xl border border-stone-200/90 bg-white p-3 shadow-sm transition hover:shadow-md cursor-help">
+            <div className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-stone-500">
+              <Users className="h-3.5 w-3.5 text-blue-600" />
+              Impacted Farms
             </div>
-            <div className="mt-2.5 text-xl font-black text-blue-900">
+            <div className="mt-2 text-base font-black text-blue-900">
               {data.impacted_farmers.toLocaleString()}
             </div>
-            <p className="mt-1 text-[10px] font-medium text-stone-500">Estimated vulnerable family units</p>
+            <p className="mt-0.5 text-[9px] font-medium text-stone-400">Vulnerable families</p>
 
             {/* Hover Tooltip */}
-            <div className="hidden md:block absolute top-full right-0 z-50 mt-1 w-[190%] rounded-xl border border-stone-800 bg-stone-950 p-3 text-[10px] text-white opacity-0 transition-opacity duration-200 pointer-events-none group-hover:opacity-100 shadow-xl">
+            <div className="hidden md:block absolute top-full right-0 z-50 mt-1 w-[280%] rounded-xl border border-stone-850 bg-stone-950 p-3 text-[10px] text-white opacity-0 transition-opacity duration-200 pointer-events-none group-hover:opacity-100 shadow-xl">
               <div className="font-bold text-blue-400">Calculation Logic:</div>
               <div className="mt-0.5 leading-relaxed text-stone-300">
                 District Farmer Base × Vulnerability Risk Factor ({data.risk_level === 'High' ? '35-55%' : data.risk_level === 'Medium' ? '15-35%' : '5-15%'}) × Rain Deficit Multiplier.
@@ -262,6 +286,27 @@ export default function GovernanceDashboard({
             </>
           )}
         </div>
+
+        {/* Seasonal Historical Crops */}
+        {data.historical_crops && data.historical_crops.length > 0 && (
+          <div className="rounded-2xl border border-stone-200 bg-white p-4 shadow-sm">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-stone-500">Historical Crops & Yields ({data.season})</h3>
+            <div className="mt-3 divide-y divide-stone-100">
+              {data.historical_crops.map((crop, idx) => (
+                <div key={idx} className="flex items-center justify-between py-2 text-xs">
+                  <div>
+                    <div className="font-bold text-stone-800">{crop.crop}</div>
+                    <div className="text-[10px] text-stone-400 font-medium">{crop.type}</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="font-bold text-stone-700">{crop.area_ha.toLocaleString()} ha</div>
+                    <div className="text-[10px] text-stone-400 font-medium">Avg: {crop.avg_yield.toFixed(2)} t/ha</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Government Action Plan */}
         <div className="rounded-2xl border border-stone-200 bg-white p-4 shadow-sm">

@@ -97,6 +97,22 @@ We built a smart crop recommendation engine and a real-time advisory system that
 ---
 
 <!-- SLIDE 8 -->
+---
+
+<!-- SLIDE 8 -->
+# Government Dashboard & Contingency Directives
+
+## Data-Driven District Contingency & Resource Allocation
+
+**Governance Mode Portal:**
+- **Dynamic Risk KPI Indicators**: Evaluates estimated impacted farmers and potential financial savings (₹ Crores) based on El Niño risk level adjusted by active monsoon rain deficits.
+- **District Reservoir Levels Comparison Chart**: High-performance visual indicators matching previous year, current, and projected reservoir level curves.
+- **Historical Crops & Yields Tracker**: Full database indexing of aggregated district crops, type, active acreage, and average yield since 2010.
+- **Checklists for Administration & Field Workers**: Cohesive task checklist modules designed for district collectors and first-action bodies.
+
+---
+
+<!-- SLIDE 9 -->
 # Tech Stack Overview
 
 ## A Modern, Scalable Architecture
