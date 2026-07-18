@@ -1,12 +1,19 @@
 import React, { useState } from 'react';
-import { Leaf, Droplets, CloudRain, Thermometer, Loader2, History, Sparkles, SlidersHorizontal } from 'lucide-react';
+import { Leaf, Droplets, CloudRain, Thermometer, Loader2, History, Sparkles, SlidersHorizontal, Layers } from 'lucide-react';
 
-function MetricCard({ icon: Icon, label, value, sub, statusColor = "text-stone-900" }) {
+function MetricCard({ icon: Icon, label, value, sub, statusColor = "text-stone-900", badge }) {
   return (
     <div className="rounded-xl border border-stone-200/80 bg-stone-50/90 p-3 shadow-2xs">
-      <div className="mb-1 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-stone-400">
-        <Icon className="h-3.5 w-3.5 text-emerald-600" />
-        {label}
+      <div className="mb-1 flex items-center justify-between">
+        <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-stone-400">
+          <Icon className="h-3.5 w-3.5 text-emerald-600" />
+          {label}
+        </div>
+        {badge && (
+          <span className="rounded bg-emerald-100 px-1.5 py-0.5 text-[9px] font-extrabold text-emerald-800">
+            {badge}
+          </span>
+        )}
       </div>
       <div className={`text-xs font-black ${statusColor}`}>{value}</div>
       {sub && <div className="mt-0.5 text-[10px] font-medium text-stone-500">{sub}</div>}
@@ -15,7 +22,7 @@ function MetricCard({ icon: Icon, label, value, sub, statusColor = "text-stone-9
 }
 
 export default function AgroInsightsPanel({ agroData, loading }) {
-  const [showTechnical, setShowTechnical] = useState(false);
+  const [viewMode, setViewMode] = useState('farmer'); // 'farmer' | 'technical'
 
   if (loading) {
     return (
@@ -38,13 +45,13 @@ export default function AgroInsightsPanel({ agroData, loading }) {
 
   const { vegetation, soil, weather, monsoon, gee_telemetry } = agroData;
 
-  // Raw values
+  // Raw Values
   const rawNdvi = vegetation?.ndvi ?? 0.46;
   const rawMoisture = soil?.moisture_percent ?? 14.5;
   const anomalyPct = gee_telemetry?.ndvi_anomaly_percent ?? -23.9;
   const baselineNdvi = gee_telemetry?.ndvi_5yr_baseline ?? 0.46;
 
-  // Plain-Language Human Terms for Farmers
+  // Farmer Friendly Statuses
   let cropHealthTitle = "Good Green Cover";
   let cropHealthColor = "text-emerald-700";
   if (rawNdvi < 0.3) {
@@ -76,30 +83,47 @@ export default function AgroInsightsPanel({ agroData, loading }) {
 
   return (
     <div className="space-y-3 rounded-2xl border border-emerald-200/80 bg-gradient-to-br from-emerald-50/80 via-white to-stone-50 p-4 shadow-sm">
-      {/* Header */}
-      <div className="flex items-center justify-between border-b border-emerald-100/80 pb-2.5">
+      {/* Header with Segmented View Switcher */}
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-emerald-100/80 pb-2.5">
         <div>
           <div className="flex items-center gap-1.5">
             <Sparkles className="h-4 w-4 text-emerald-600" />
-            <h4 className="text-xs font-bold text-stone-900">Live Satellite Field Scan</h4>
+            <h4 className="text-xs font-bold text-stone-900">
+              {viewMode === 'farmer' ? "Live Satellite Field Scan" : "Google Earth Engine Technical Telemetry"}
+            </h4>
           </div>
           <p className="mt-0.5 text-[10px] font-medium text-stone-500">
-            Real-time crop vigor & soil moisture analysis
+            {viewMode === 'farmer' ? "Simple plain-language crop & soil health" : "Raw Sentinel-2 NDVI & SMAP sensor indexes"}
           </p>
         </div>
 
-        {/* Toggle between Farmer View & Technical Data */}
-        <button
-          onClick={() => setShowTechnical(!showTechnical)}
-          className="flex items-center gap-1 rounded-full border border-emerald-200 bg-white px-2.5 py-1 text-[10px] font-bold text-emerald-800 shadow-2xs hover:bg-emerald-50 transition"
-        >
-          <SlidersHorizontal className="h-3 w-3" />
-          <span>{showTechnical ? "Simple Farmer View" : "Technical Metrics"}</span>
-        </button>
+        {/* View Mode Segment Pill */}
+        <div className="flex rounded-full border border-emerald-200 bg-white p-0.5 shadow-2xs">
+          <button
+            onClick={() => setViewMode('farmer')}
+            className={`rounded-full px-2.5 py-1 text-[10px] font-extrabold transition ${
+              viewMode === 'farmer'
+                ? 'bg-emerald-600 text-white shadow-xs'
+                : 'text-stone-600 hover:text-stone-900'
+            }`}
+          >
+            🌾 Farmer View
+          </button>
+          <button
+            onClick={() => setViewMode('technical')}
+            className={`rounded-full px-2.5 py-1 text-[10px] font-extrabold transition ${
+              viewMode === 'technical'
+                ? 'bg-emerald-600 text-white shadow-xs'
+                : 'text-stone-600 hover:text-stone-900'
+            }`}
+          >
+            🔬 Technical (NDVI/SMAP)
+          </button>
+        </div>
       </div>
 
       {/* Main Grid */}
-      {!showTechnical ? (
+      {viewMode === 'farmer' ? (
         /* SIMPLE FARMER VIEW */
         <div className="grid grid-cols-2 gap-2">
           <MetricCard
@@ -130,30 +154,34 @@ export default function AgroInsightsPanel({ agroData, loading }) {
           />
         </div>
       ) : (
-        /* SCIENTIFIC TECHNICAL VIEW */
+        /* TECHNICAL VIEW FOR OFFICERS / SCIENTISTS */
         <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
           <MetricCard
             icon={Leaf}
             label="Sentinel-2 NDVI"
             value={rawNdvi}
-            sub={vegetation?.health ?? 'Canopy index'}
+            badge="0.0–1.0"
+            sub={vegetation?.health ?? 'Canopy Reflectance'}
           />
           <MetricCard
             icon={Droplets}
             label="SMAP Soil Moisture"
             value={`${rawMoisture}%`}
-            sub="Root-zone moisture"
+            badge="Root Zone"
+            sub="Volumetric Water Cont."
           />
           <MetricCard
             icon={CloudRain}
-            label="Rainfall 90d"
+            label="CHIRPS Rain 90d"
             value={monsoon?.accumulated_rainfall_90d_mm != null ? `${monsoon.accumulated_rainfall_90d_mm} mm` : '—'}
+            badge="Satellite"
             sub={monsoon?.status}
           />
           <MetricCard
             icon={Thermometer}
-            label="Air Temperature"
+            label="ERA5 Air Temp"
             value={weather?.temp_c != null ? `${weather.temp_c}°C` : '—'}
+            badge="Reanalysis"
             sub={weather?.description}
           />
         </div>
@@ -171,10 +199,12 @@ export default function AgroInsightsPanel({ agroData, loading }) {
           </span>
         </div>
         <p className="mt-1.5 text-xs font-bold text-amber-900">{historicalComparison}</p>
-        {showTechnical && (
-          <p className="mt-1 text-[10px] text-stone-500">
-            Current NDVI: <strong>{rawNdvi}</strong> | 5-Yr Historical Baseline Median: <strong>{baselineNdvi}</strong>
-          </p>
+        {viewMode === 'technical' && (
+          <div className="mt-2 rounded-lg border border-amber-200/60 bg-white/80 p-2 text-[10px] text-stone-600 space-y-0.5">
+            <div>Current Sentinel-2 NDVI: <strong className="text-stone-900">{rawNdvi}</strong></div>
+            <div>5-Year Median Baseline (2021–2025): <strong className="text-stone-900">{baselineNdvi}</strong></div>
+            <div>Calculated Deficit: <strong className="text-red-700">{anomalyPct}%</strong></div>
+          </div>
         )}
       </div>
     </div>
