@@ -12,6 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from PIL import Image
 from google import genai
 from agro_client import get_district_metrics, get_location_insights
+from gee_client import get_gee_farm_insights
 from twilio_sms import twilio_configured
 from farmer_intelligence import (
     SUPPORTED_LANGUAGES,
@@ -109,7 +110,7 @@ def update_statewise_repository(lat: float, lon: float, weather_res: Optional[di
                 f"providing irrigation to {district['name']} in {state_name}, India. "
                 f"Return ONLY a JSON list of strings (e.g., [\"River A\", \"Dam B\"]). No explanation, no markdown blocks."
             )
-            response = client.models.generate_content(model="gemini-2.5-flash", contents=[prompt])
+            response = client.models.generate_content(model="gemini-1.5-flash", contents=[prompt])
             text = response.text.strip()
             # Clean markdown formatting if any
             if text.startswith("```"):
@@ -387,6 +388,14 @@ def _gather_farm_context(lat: float, lon: float):
         if AGROMONITORING_API_KEY
         else {"available": False}
     )
+    # Augment with Google Earth Engine satellite telemetry
+    gee = get_gee_farm_insights(lat, lon)
+    if gee:
+        agro["gee_telemetry"] = gee
+        if not agro.get("available"):
+            agro["available"] = True
+            agro["vegetation"] = {"ndvi": gee.get("ndvi"), "health": gee.get("ndvi_description")}
+            agro["soil"] = {"moisture_percent": gee.get("soil_moisture_percentage"), "status": gee.get("soil_status")}
     return district, weather, agro
 
 
@@ -398,7 +407,7 @@ def _gemini_generate(prompt: str, image: Optional[Image.Image] = None) -> Option
         payload: list = [prompt]
         if image:
             payload.append(image)
-        response = client.models.generate_content(model="gemini-2.5-flash", contents=payload)
+        response = client.models.generate_content(model="gemini-1.5-flash", contents=payload)
         return response.text
     except Exception as exc:
         print(f"Gemini error: {exc}")
@@ -887,7 +896,7 @@ async def chat_advisory(
             if pil_image:
                 payload.append(pil_image)
 
-            response = client.models.generate_content(model="gemini-2.5-flash", contents=payload)
+            response = client.models.generate_content(model="gemini-1.5-flash", contents=payload)
 
             return {
                 "response": response.text,
@@ -962,6 +971,13 @@ async def chat_advisory(
         } if nearest_district else None,
         "weather_context": weather_context
     }
+
+
+@app.get("/api/gee/insights")
+def gee_farm_insights(lat: float = Query(..., description="Latitude"), lon: float = Query(..., description="Longitude")):
+    """Returns Google Earth Engine Sentinel-2 NDVI and SMAP soil moisture metrics for given coordinates."""
+    return get_gee_farm_insights(lat, lon)
+
 
 if __name__ == "__main__":
     import uvicorn
