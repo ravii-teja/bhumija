@@ -28,17 +28,30 @@ _GEE_INITIALIZED = False
 
 
 def init_gee(project_id: Optional[str] = None) -> bool:
-    """Initialize Google Earth Engine API."""
+    """Initialize Google Earth Engine API.
+    
+    Supports:
+    1. Production Server: GCP Service Account credentials (GEE_SERVICE_ACCOUNT & GEE_SERVICE_ACCOUNT_KEY_FILE).
+    2. Local Development: Auto-cached OAuth token (~/.config/earthengine/credentials).
+    """
     global _GEE_INITIALIZED
     if _GEE_INITIALIZED:
         return True
 
     try:
         import ee
-        if project_id:
+        service_account = os.getenv("GEE_SERVICE_ACCOUNT")
+        key_file = os.getenv("GEE_SERVICE_ACCOUNT_KEY_FILE")
+
+        if service_account and key_file and os.path.exists(key_file):
+            credentials = ee.ServiceAccountCredentials(service_account, key_file)
+            ee.Initialize(credentials=credentials)
+            logger.info("Google Earth Engine initialized via GCP Service Account.")
+        elif project_id:
             ee.Initialize(project=project_id)
         else:
             ee.Initialize()
+
         _GEE_INITIALIZED = True
         logger.info("Google Earth Engine initialized successfully.")
         return True
