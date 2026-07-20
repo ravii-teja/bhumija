@@ -176,6 +176,21 @@ export default function App() {
   return (
     <div className="relative flex h-[100dvh] flex-col overflow-hidden bg-stone-900 font-sans text-stone-900 antialiased">
       <Analytics />
+
+      {/* Top Header Bar */}
+      <header className="flex h-14 w-full shrink-0 items-center justify-between border-b border-stone-200/80 bg-white px-4 shadow-sm z-30">
+        <div className="flex items-center gap-2.5">
+          <div className="rounded-full bg-brand-600 p-1.5 text-white">
+            <Sprout className="h-4 w-4" />
+          </div>
+          <div className="flex items-center gap-2 text-xs sm:text-sm font-bold text-stone-800">
+            <span className="tracking-wide">Bhumija</span>
+            <span className="text-stone-300 font-normal">|</span>
+            <span className="font-semibold text-stone-500">AI Resilience Engine for India</span>
+          </div>
+        </div>
+      </header>
+
       <main className="relative min-h-0 flex-1">
         <MapComponent
           mapKey={mapKey}
@@ -196,24 +211,6 @@ export default function App() {
             />
           }
         />
-
-        {!isMobile && !panelOpen && (
-          <div
-            className="pointer-events-none absolute right-14 z-20 flex items-center gap-2 rounded-2xl border border-white/10 bg-stone-900/75 px-3 py-2 shadow-lg backdrop-blur-md"
-            style={{ top: 'calc(0.75rem + env(safe-area-inset-top, 0px))' }}
-          >
-            <div className="rounded-xl bg-brand-600 p-1.5 text-white">
-              <Sprout className="h-4 w-4" />
-            </div>
-            <div>
-              <span className="text-sm font-bold text-white">Bhumija</span>
-              <div className="flex items-center gap-1 text-[10px] font-medium text-stone-400">
-                <Sparkles className="h-3 w-3 text-brand-400" />
-                {geminiConfigured ? 'Gemini AI' : 'Expert mode'}
-              </div>
-            </div>
-          </div>
-        )}
 
         {!isMobile && (
           <>
@@ -307,7 +304,7 @@ export default function App() {
             rel="noopener noreferrer"
             className="font-bold text-brand-600 hover:text-brand-700 hover:underline"
           >
-            Ravi Teja
+            Ravi
           </a>
           <span> & </span>
           <a
@@ -316,7 +313,7 @@ export default function App() {
             rel="noopener noreferrer"
             className="font-bold text-brand-600 hover:text-brand-700 hover:underline"
           >
-            Karunakara Reddy
+            Karan
           </a>
         </div>
       )}
