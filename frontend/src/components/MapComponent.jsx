@@ -473,6 +473,8 @@ export default function MapComponent({
         </div>
       )}
 
+
+
       {!resolvedMapKey && (
         <div className="absolute inset-0 z-40 flex items-center justify-center bg-white/90 p-6 text-center">
           <p className="text-sm font-medium text-stone-600">MapMyIndia API key missing</p>

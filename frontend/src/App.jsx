@@ -290,6 +290,36 @@ export default function App() {
           </BottomSheet>
         </>
       )}
+      {/* Global Centered Footer Credits */}
+      {(!isMobile || !selectedLocation) && (
+        <div
+          className="pointer-events-auto fixed -translate-x-1/2 rounded-full border border-stone-200/80 bg-white/95 px-3 py-1.5 text-[10px] font-semibold text-stone-600 shadow-md backdrop-blur-md"
+          style={{
+            left: isMobile ? '50%' : panelOpen ? 'calc(50% - 280px)' : '50%',
+            bottom: isMobile ? 'calc(4.75rem + env(safe-area-inset-bottom, 0px))' : '0.5rem',
+            zIndex: 9999,
+          }}
+        >
+          <span>Made with ❤️ by </span>
+          <a
+            href="https://www.linkedin.com/in/raviiteja/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-bold text-brand-600 hover:text-brand-700 hover:underline"
+          >
+            Ravi Teja
+          </a>
+          <span> & </span>
+          <a
+            href="https://www.linkedin.com/in/karunakarreddyk/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-bold text-brand-600 hover:text-brand-700 hover:underline"
+          >
+            Karunakara Reddy
+          </a>
+        </div>
+      )}
     </div>
   );
 }
