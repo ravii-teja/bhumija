@@ -144,6 +144,19 @@ export default function BhumijaAssistant({
   }, [fetchInsights]);
 
   useEffect(() => {
+    const handleCustomQuery = (e) => {
+      const { query } = e.detail || {};
+      if (query) {
+        sendMessageRef.current(query);
+      }
+    };
+    window.addEventListener('bhumija-query-assistant', handleCustomQuery);
+    return () => {
+      window.removeEventListener('bhumija-query-assistant', handleCustomQuery);
+    };
+  }, []);
+
+  useEffect(() => {
     if (!selectedLocation || insightsLoading) return;
     const key = `${selectedLocation.lat.toFixed(4)},${selectedLocation.lon.toFixed(4)}`;
     if (lastBriefedLocationRef.current === key) return;

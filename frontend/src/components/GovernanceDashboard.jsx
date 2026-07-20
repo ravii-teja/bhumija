@@ -18,6 +18,7 @@ export default function GovernanceDashboard({
   agroData,
 }) {
   const [data, setData] = useState(null);
+  const [recomCrops, setRecomCrops] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [completedSteps, setCompletedSteps] = useState({});
@@ -30,12 +31,17 @@ export default function GovernanceDashboard({
       setError(null);
       try {
         const { lat, lon } = selectedLocation;
-        const res = await fetch(`/api/governance/insights?lat=${lat}&lon=${lon}`);
-        if (!res.ok) {
-          throw new Error('Failed to load governance insights');
+        const [govRes, cropsRes] = await Promise.all([
+          fetch(`/api/governance/insights?lat=${lat}&lon=${lon}`),
+          fetch(`/api/farmer/crop-recommend?lat=${lat}&lon=${lon}&lang=en`)
+        ]);
+        if (!govRes.ok || !cropsRes.ok) {
+          throw new Error('Failed to load governance insights or crop recommendations');
         }
-        const json = await res.json();
-        setData(json);
+        const govJson = await govRes.json();
+        const cropsJson = await cropsRes.json();
+        setData(govJson);
+        setRecomCrops(cropsJson);
       } catch (err) {
         console.error(err);
         setError(err.message);
@@ -287,26 +293,65 @@ export default function GovernanceDashboard({
           )}
         </div>
 
-        {/* Seasonal Historical Crops */}
-        {data.historical_crops && data.historical_crops.length > 0 && (
+        {/* Side-by-Side: Historical Crops vs Recommended Crops */}
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          {/* Historical Crops */}
           <div className="rounded-2xl border border-stone-200 bg-white p-4 shadow-sm">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-stone-500">Historical Crops & Yields ({data.season})</h3>
-            <div className="mt-3 divide-y divide-stone-100">
-              {data.historical_crops.map((crop, idx) => (
-                <div key={idx} className="flex items-center justify-between py-2 text-xs">
-                  <div>
-                    <div className="font-bold text-stone-800">{crop.crop}</div>
-                    <div className="text-[10px] text-stone-400 font-medium">{crop.type}</div>
+            <h3 className="text-xs font-bold uppercase tracking-wider text-stone-500">
+              Historical Crops & Yields ({data.season})
+            </h3>
+            {data.historical_crops && data.historical_crops.length > 0 ? (
+              <div className="mt-3 divide-y divide-stone-100">
+                {data.historical_crops.map((crop, idx) => (
+                  <div key={idx} className="flex items-center justify-between py-2 text-xs">
+                    <div>
+                      <div className="font-bold text-stone-850">{crop.crop}</div>
+                      <div className="text-[10px] text-stone-400 font-medium">{crop.type}</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-bold text-stone-700">{crop.area_ha.toLocaleString()} ha</div>
+                      <div className="text-[10px] text-stone-400 font-medium">Avg: {crop.avg_yield.toFixed(2)} t/ha</div>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <div className="font-bold text-stone-700">{crop.area_ha.toLocaleString()} ha</div>
-                    <div className="text-[10px] text-stone-400 font-medium">Avg: {crop.avg_yield.toFixed(2)} t/ha</div>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <p className="mt-3 text-xs text-stone-500 italic">No historical crops found for this season.</p>
+            )}
           </div>
-        )}
+
+          {/* Recommended Crops */}
+          <div className="rounded-2xl border border-stone-200 bg-white p-4 shadow-sm">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-stone-500">
+              Recommended Crops ({data.season})
+            </h3>
+            {recomCrops?.recommendations && recomCrops.recommendations.length > 0 ? (
+              <div className="mt-3 divide-y divide-stone-100">
+                {recomCrops.recommendations.map((rec, idx) => (
+                  <div key={idx} className="py-2.5 text-xs">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="font-bold text-stone-850">{rec.crop}</div>
+                        <div className="text-[10px] text-brand-600 font-medium">Suitability: {rec.suitability_score}%</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-bold text-stone-700">{rec.water_requirement}</div>
+                        <div className="text-[10px] text-stone-400 font-medium">{rec.duration_days} days</div>
+                      </div>
+                    </div>
+                    {rec.reason && (
+                      <p className="mt-1.5 text-[10px] leading-relaxed text-stone-500 bg-stone-50/50 p-2 rounded-lg border border-stone-100/80">
+                        {rec.reason}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="mt-3 text-xs text-stone-500 italic">No recommendations loaded.</p>
+            )}
+          </div>
+        </div>
 
         {/* Government Action Plan */}
         <div className="rounded-2xl border border-stone-200 bg-white p-4 shadow-sm">

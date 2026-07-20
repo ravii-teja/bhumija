@@ -30,25 +30,7 @@ const STATE_COORDINATES = {
   'Odisha': { lat: 20.9517, lon: 85.0985 },
 };
 
-function districtColor(district, overlayMode, agroMetrics) {
-  const metric = agroMetrics?.find((m) => m.district_id === district.id);
-
-  if (overlayMode === 'monsoon' && metric?.overlay_colors?.monsoon) {
-    const c = metric.overlay_colors.monsoon;
-    return { fill: c, stroke: c };
-  }
-  if (overlayMode === 'soil' && metric?.overlay_colors?.soil) {
-    const c = metric.overlay_colors.soil;
-    return { fill: c, stroke: c };
-  }
-  if (overlayMode === 'composite' && metric) {
-    const stress = metric.soil_stress_score ?? 0.5;
-    const monsoon = metric.monsoon_score ?? 0.5;
-    const composite = stress * 0.5 + (1 - monsoon) * 0.5;
-    const risk = riskToColor(composite);
-    return { fill: risk.fill, stroke: risk.stroke };
-  }
-
+function districtColor(district) {
   return districtRiskColor(district.risk_level);
 }
 
@@ -58,8 +40,6 @@ export default function MapComponent({
   selectedLocation,
   onSelectLocation,
   agroMetrics,
-  overlayMode,
-  onOverlayModeChange,
   weather,
   agroData,
   loadingWeather,
@@ -71,7 +51,6 @@ export default function MapComponent({
   const mapRef = useRef(null);
   const overlayLayersRef = useRef([]);
   const markerRef = useRef(null);
-  const haloRef = useRef(null);
   const onSelectRef = useRef(onSelectLocation);
   const pinModeRef = useRef(false);
   const isMobile = useIsMobile();
@@ -180,6 +159,7 @@ export default function MapComponent({
     const map = mapRef.current;
     if (!map || !mapReady) return;
 
+    // Clear previous overlays
     overlayLayersRef.current.forEach((layer) => {
       try {
         window.mappls?.remove?.({ map, layer });
@@ -189,94 +169,133 @@ export default function MapComponent({
     });
     overlayLayersRef.current = [];
 
-    if (overlayMode === 'statewise') {
-      statewiseRepo?.forEach((item) => {
-        const coords = STATE_COORDINATES[item.state];
-        if (!coords) return;
+    // Remove heatmap layer and source if they exist
+    try {
+      if (map.getLayer('risk-heatmap')) map.removeLayer('risk-heatmap');
+      if (map.getSource('districts-risk')) map.removeSource('districts-risk');
+    } catch (e) {
+      // ignore
+    }
 
+    if (!districts?.length) return;
+
+    if (!selectedLocation) {
+      // Render density heatmap of the 315 El Niño risk districts on initial load
+      try {
+        map.addSource('districts-risk', {
+          type: 'geojson',
+          data: {
+            type: 'FeatureCollection',
+            features: districts.map((d) => ({
+              type: 'Feature',
+              properties: {
+                risk_value: d.risk_level === 'High' ? 1.0 : d.risk_level === 'Medium' ? 0.6 : 0.2,
+              },
+              geometry: {
+                type: 'Point',
+                coordinates: [d.lon, d.lat],
+              },
+            })),
+          },
+        });
+
+        map.addLayer({
+          id: 'risk-heatmap',
+          type: 'heatmap',
+          source: 'districts-risk',
+          maxzoom: 9,
+          paint: {
+            'heatmap-weight': [
+              'interpolate',
+              ['linear'],
+              ['get', 'risk_value'],
+              0, 0,
+              1, 1
+            ],
+            'heatmap-intensity': [
+              'interpolate',
+              ['linear'],
+              ['zoom'],
+              0, 1,
+              9, 3
+            ],
+            'heatmap-color': [
+              'interpolate',
+              ['linear'],
+              ['heatmap-density'],
+              0, 'rgba(37, 99, 235, 0)',
+              0.2, 'rgba(59, 130, 246, 0.5)',
+              0.5, 'rgba(245, 158, 11, 0.75)',
+              1, 'rgba(239, 68, 68, 0.85)'
+            ],
+            'heatmap-radius': [
+              'interpolate',
+              ['linear'],
+              ['zoom'],
+              0, 15,
+              9, 45
+            ],
+            'heatmap-opacity': 0.8,
+          },
+        });
+      } catch (err) {
+        console.warn('Error rendering heatmap:', err);
+      }
+    } else {
+      // Render a clean location circle overlay after location selection
+      const { lat, lon, district } = selectedLocation;
+      const targetDistrict = district || districts.find((d) => d.id === selectedLocation.district_id);
+      
+      if (targetDistrict) {
+        const colors = districtColor(targetDistrict);
         try {
           const circle = new window.mappls.Circle({
             map,
-            center: { lat: coords.lat, lng: coords.lon },
-            radius: 120000,
-            strokeColor: '#3b82f6',
+            center: { lat, lng: lon },
+            radius: 42000,
+            strokeColor: colors.stroke,
             strokeOpacity: 0.95,
-            strokeWeight: 2,
-            fillColor: '#60a5fa',
-            fillOpacity: 0.45,
+            strokeWeight: 1.5,
+            fillColor: colors.fill,
+            fillOpacity: 0.32,
           });
 
-          const cropsList = item.crops ? item.crops.join(', ') : '—';
-          const weatherDesc = item.weather_data && item.weather_data.temperature != null
-            ? `${item.weather_data.temperature}°C · ${item.weather_data.description || 'Sunny'}`
-            : '—';
-          const waterList = item.water_resources ? item.water_resources.join(', ') : '—';
-
           circle.bindPopup?.(
-            `<div style="font-family:Roboto,Inter,sans-serif;padding:6px;max-width:240px;line-height:1.4;">
-              <strong style="font-size:13px;color:#1e3a8a;display:block;margin-bottom:4px;">${item.state} Repository</strong>
-              <div style="font-size:11px;margin-top:4px;"><strong>Crops:</strong> ${cropsList}</div>
-              <div style="font-size:11px;margin-top:2px;"><strong>Weather:</strong> ${weatherDesc}</div>
-              <div style="font-size:11px;margin-top:2px;"><strong>Soil:</strong> ${item.soil_type || '—'}</div>
-              <div style="font-size:11px;margin-top:2px;"><strong>Water Sources:</strong> ${waterList}</div>
-              <div style="font-size:9px;color:#78716c;margin-top:6px;text-align:right;">Updated: ${item.last_updated ? new Date(item.last_updated).toLocaleDateString() : '—'}</div>
+            `<div style="font-family:Roboto,Inter,sans-serif;padding:4px;">
+              <strong>${targetDistrict.name}</strong>
+              <div style="font-size:11px;color:#57534e;">${targetDistrict.region} · ${targetDistrict.risk_level} risk</div>
             </div>`
           );
 
           circle.addListener('click', (event) => {
             if (event?.stopPropagation) event.stopPropagation();
-            map.setCenter({ lat: coords.lat, lng: coords.lon });
-            map.setZoom(7);
+            onSelectRef.current(targetDistrict.lat, targetDistrict.lon, targetDistrict);
           });
 
           overlayLayersRef.current.push(circle);
         } catch (error) {
-          console.warn('Could not render state circle:', item.state, error);
+          console.warn('Could not render district circle:', targetDistrict.name, error);
         }
-      });
-      return;
-    }
-
-    if (!districts?.length) return;
-
-    districts.forEach((district) => {
-      const colors = districtColor(district, overlayMode, agroMetrics);
-      try {
-        const circle = new window.mappls.Circle({
-          map,
-          center: { lat: district.lat, lng: district.lon },
-          radius: 42000,
-          strokeColor: colors.stroke,
-          strokeOpacity: 0.95,
-          strokeWeight: 1.5,
-          fillColor: colors.fill,
-          fillOpacity: overlayMode === 'vulnerability' ? 0.32 : 0.4,
-        });
-
-        const metric = agroMetrics?.find((m) => m.district_id === district.id);
-        circle.bindPopup?.(
-          `<div style="font-family:Roboto,Inter,sans-serif;padding:4px;">
-            <strong>${district.name}</strong>
-            <div style="font-size:11px;color:#57534e;">${district.region} · ${district.risk_level} risk</div>
-            ${
-              overlayMode === 'monsoon' && metric
-                ? `<div style="font-size:11px;margin-top:4px;">90d: ${metric.accumulated_rainfall_90d_mm ?? '—'} mm</div>`
-                : ''
-            }
-          </div>`
-        );
-
-        circle.addListener('click', (event) => {
-          if (event?.stopPropagation) event.stopPropagation();
-          onSelectRef.current(district.lat, district.lon, district);
-        });
-
-        overlayLayersRef.current.push(circle);
-      } catch (error) {
-        console.warn('Could not render district circle:', district.name, error);
+      } else {
+        // Fallback for custom search / click coordinates
+        try {
+          const circle = new window.mappls.Circle({
+            map,
+            center: { lat, lng: lon },
+            radius: 42000,
+            strokeColor: '#f97316',
+            strokeOpacity: 0.95,
+            strokeWeight: 1.5,
+            fillColor: '#fdba74',
+            fillOpacity: 0.32,
+          });
+          overlayLayersRef.current.push(circle);
+        } catch (error) {
+          console.warn('Could not render pinned coordinate circle:', error);
+        }
       }
-    });
-  }, [districts, mapReady, overlayMode, agroMetrics, statewiseRepo]);
+    }
+  }, [districts, mapReady, selectedLocation]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -294,32 +313,8 @@ export default function MapComponent({
       }
       markerRef.current = null;
     }
-    if (haloRef.current) {
-      try {
-        window.mappls?.remove?.({ map, layer: haloRef.current });
-      } catch {
-        // ignore
-      }
-      haloRef.current = null;
-    }
-
     const riskScore = computeLocationRisk({ district, weather, agroData });
     const risk = riskToColor(riskScore);
-
-    try {
-      haloRef.current = new window.mappls.Circle({
-        map,
-        center: { lat, lng: lon },
-        radius: 8000,
-        strokeColor: risk.stroke,
-        strokeOpacity: 0.9,
-        strokeWeight: 2,
-        fillColor: risk.fill,
-        fillOpacity: 0.22,
-      });
-    } catch {
-      // ignore
-    }
 
     markerRef.current = new window.mappls.Marker({
       map,
@@ -349,7 +344,7 @@ export default function MapComponent({
         setGpsError(err.message || 'Could not get location');
         setGpsLoading(false);
       },
-      { enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 }
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
     );
   };
 
@@ -371,50 +366,18 @@ export default function MapComponent({
         </div>
       )}
 
-      {/* Overlay chips — horizontal scroll on mobile */}
-      <div
-        className="pointer-events-none absolute left-0 right-0 z-30 md:left-auto md:right-4 md:max-w-none md:px-0"
-        style={{ top: 'calc(4.25rem + env(safe-area-inset-top, 0px))' }}
-      >
-        <div className="pointer-events-auto flex items-center gap-2 px-3 md:justify-end md:px-0">
-          <div className="flex flex-1 gap-1.5 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] md:flex-none md:flex-wrap md:justify-end [&::-webkit-scrollbar]:hidden">
-            {OVERLAY_MODES.map((mode) => (
-              <button
-                key={mode.id}
-                type="button"
-                onClick={() => onOverlayModeChange?.(mode.id)}
-                className={`min-h-[36px] shrink-0 snap-start rounded-full px-3 py-1.5 text-xs font-semibold shadow-md transition md:min-h-[40px] md:px-3.5 ${
-                  overlayMode === mode.id
-                    ? 'bg-brand-600 text-white shadow-brand-600/25'
-                    : 'border border-stone-200/80 bg-white/95 text-stone-700'
-                }`}
-              >
-                <span className="md:hidden">{mode.short}</span>
-                <span className="hidden md:inline">{mode.label}</span>
-              </button>
-            ))}
-          </div>
-          <button
-            type="button"
-            onClick={() => setShowLegend((v) => !v)}
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-stone-200/80 bg-white/95 shadow-md md:hidden"
-            aria-label="Toggle legend"
-          >
-            <Layers className="h-4 w-4 text-stone-600" />
-          </button>
-        </div>
-      </div>
 
       {/* Map FABs — Material 48dp touch targets, right side above bottom nav */}
       <div
-        className="absolute z-30 flex flex-col gap-3 md:left-4 md:top-auto md:bottom-auto"
+        className="absolute z-30 flex flex-col gap-3 md:left-4 md:right-auto md:top-auto md:bottom-auto"
         style={{
-          right: '0.75rem',
+          left: isMobile ? 'auto' : '1rem',
+          right: isMobile ? '0.75rem' : 'auto',
           bottom: isMobile
             ? selectedLocation
               ? 'calc(8.5rem + env(safe-area-inset-bottom, 0px))'
               : 'calc(5rem + env(safe-area-inset-bottom, 0px))'
-            : '1rem',
+            : '1.25rem',
         }}
       >
         <button
@@ -477,7 +440,7 @@ export default function MapComponent({
           className={`pointer-events-auto absolute z-20 rounded-2xl border border-stone-200/80 bg-white/95 px-3 py-2.5 text-xs font-semibold text-stone-800 shadow-md backdrop-blur-md ${
             isMobile
               ? 'left-3 right-3'
-              : 'bottom-auto left-auto right-4 top-28 hidden max-w-[200px] md:block'
+              : 'md:left-5 md:top-1/2 md:-translate-y-1/2 md:bottom-auto md:right-auto hidden max-w-[200px] md:block'
           }`}
           style={
             isMobile
@@ -486,7 +449,7 @@ export default function MapComponent({
           }
         >
           <div className="mb-2 flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-stone-400">
-            <span>Legend</span>
+            <span>El Nino Risk Categories</span>
             {isMobile && (
               <button type="button" onClick={() => setShowLegend(false)} className="text-stone-500">
                 Close

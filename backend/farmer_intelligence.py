@@ -482,6 +482,7 @@ def recommend_crops(
 ) -> dict:
     from governance import get_current_season, get_district_crop_metrics
     current_season = get_current_season()
+    region = district.get("region", "default") if district else "default"
     db_crops = []
     if district:
         db_crops = get_district_crop_metrics(district.get("state", ""), district.get("name", ""), current_season)

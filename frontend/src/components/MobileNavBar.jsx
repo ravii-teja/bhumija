@@ -3,12 +3,14 @@ import { Map, MessageCircle, Building2 } from 'lucide-react';
 
 const NAV_ITEMS = [
   { id: 'map', label: 'Map', icon: Map },
-  { id: 'assistant', label: 'Assistant', icon: MessageCircle },
   { id: 'governance', label: 'Governance', icon: Building2 },
+  { id: 'assistant', label: 'Assistant', icon: MessageCircle },
 ];
 
 
-export default function MobileNavBar({ active, onChange }) {
+export default function MobileNavBar({ active, onChange, showGovernance }) {
+  const items = showGovernance ? NAV_ITEMS : NAV_ITEMS.filter(item => item.id !== 'governance');
+
   return (
     <nav
       className="fixed bottom-0 left-0 right-0 z-40 border-t border-stone-200/80 bg-white/95 shadow-[0_-4px_24px_rgba(0,0,0,0.08)] backdrop-blur-lg md:hidden"
@@ -16,7 +18,7 @@ export default function MobileNavBar({ active, onChange }) {
       aria-label="Main navigation"
     >
       <div className="flex h-16 items-stretch justify-around px-4">
-        {NAV_ITEMS.map(({ id, label, icon: Icon }) => {
+        {items.map(({ id, label, icon: Icon }) => {
           const isActive = active === id;
           return (
             <button

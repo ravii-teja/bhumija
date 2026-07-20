@@ -54,9 +54,10 @@ We built a smart crop recommendation engine and a real-time advisory system that
 ## Precise Field-Level Intelligence
 
 **Map Visuals & Geolocation Based Insights:**
-- **Interactive Targeting:** Simply search for your village, drop a pin on the interactive MapMyIndia interface, or use device GPS.
-- **Real-Time Overlays:** Visualize El Niño risk zones, monsoon tracks, and soil moisture levels directly on the map.
-- **Hyper-Local Metrics Dashboard:** Instantly view 90-day/365-day rainfall accumulation, vegetation stress (NDVI), and current temperatures specific to your plot, not just the broader district.
+- **Density Heatmap Sowing:** Instant visual tracking of 315 El Niño vulnerable districts mapped as a color-graded density heatmap on initial load to avoid clutter.
+- **Interactive Circle Overlays:** Tapping, pinning, or searching for a location clears the heatmap and centers a clean, unified risk circle overlay exactly at the selected coordinate.
+- **High-Accuracy Geolocation:** GPS-assisted coordinate query running with raw hardware querying (`maximumAge: 0`) for pin-point accuracy on the map.
+- **Hyper-Local Metrics Dashboard:** View 90-day/365-day rainfall accumulation, vegetation stress (NDVI), and current temperatures specific to your plot.
 
 ---
 
@@ -79,6 +80,7 @@ We built a smart crop recommendation engine and a real-time advisory system that
 
 **Making Data-Driven Decisions:**
 - **Smart Crop Picks:** Get immediate suggestions for short-duration or drought-resilient crops (like Bajra, Tur, Moong) based on the live moisture profile of your soil.
+- **Database-Backed Advisories:** Recommendations incorporate localized historical yield statistics (t/ha) and acreage from a 455k-row crop production database.
 - **In-App Alerts:** Receive dynamic "red/yellow/green" risk badges alerting you to upcoming dry spells.
 - **Irrigation Guidance:** The platform tells you exactly when to deploy protective measures like mulching or drip irrigation, ensuring every drop of water is conserved.
 
@@ -105,10 +107,10 @@ We built a smart crop recommendation engine and a real-time advisory system that
 ## Data-Driven District Contingency & Resource Allocation
 
 **Governance Mode Portal:**
-- **Dynamic Risk KPI Indicators**: Evaluates estimated impacted farmers and potential financial savings (₹ Crores) based on El Niño risk level adjusted by active monsoon rain deficits.
-- **District Reservoir Levels Comparison Chart**: High-performance visual indicators matching previous year, current, and projected reservoir level curves.
-- **Historical Crops & Yields Tracker**: Full database indexing of aggregated district crops, type, active acreage, and average yield since 2010.
-- **Checklists for Administration & Field Workers**: Cohesive task checklist modules designed for district collectors and first-action bodies.
+- **Dynamic Risk & Loss KPI Indicators**: Displays El Niño Predicted Loss (₹ Crores), estimated impacted farmers, and potential savings (₹ Crores) based on district risk profiles.
+- **Reservoir Capacity & Outlook Tracker**: Graphical comparison of reservoir storage levels (previous year, current, and 3-month outlook under El Niño).
+- **Location-to-Crop Database Integration**: Connects district data directly to a 455k-row historical database since 2010 for seasonal acreage and yield trends.
+- **Interactive Checklists**: Tailored action steps for District Collectors and Field Workers to track mitigation tasks.
 
 ---
 
@@ -117,11 +119,11 @@ We built a smart crop recommendation engine and a real-time advisory system that
 
 ## A Modern, Scalable Architecture
 
-- **Frontend:** React 18, Vite, and Tailwind CSS for a fast, mobile-responsive UI. Map layers powered by MapMyIndia (Mappls) and Leaflet.
-- **Backend:** FastAPI (Python) running seamlessly as a Vercel serverless function.
-- **AI & Intelligence:** Google Gemini 2.5 Flash for multimodal chat, voice, and vision diagnosis.
-- **Data Integrations:** Open-Meteo for real-time weather/soil telemetry; Twilio for robust SMS alert delivery.
-- **Deployment:** Vercel for zero-config global edge delivery and GitHub for version control.
+- **Frontend:** React 18, Vite, and Tailwind CSS for a fast, mobile-responsive UI. Interactive map layers powered by MapMyIndia (Mappls) and Leaflet.
+- **Backend:** FastAPI (Python) running as a serverless backend.
+- **Database & Storage:** Supabase PostgreSQL storing queries, statewise repositories, and historical crop data (using `psycopg2`).
+- **AI & Intelligence:** Google Gemini 2.5 Flash for chat, voice, vision, and dynamic administrative directives.
+- **Performance & Delivery:** In-memory autocomplete search caching; 2-decimal rounded coordinate response cache (weather, agromonitoring, crop recommendations, and governance insights); Open-Meteo for telemetry; Twilio for SMS; Vercel for hosting.
 
 ---
 

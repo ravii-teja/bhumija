@@ -86,9 +86,23 @@ def get_governance_insights(
 
     # Fallback to local hardcoded crops if DB returns empty
     if not seasonal_crops:
-        primary_crops = district.get("primary_crops", ["Kharif Crops"]) if district else ["Kharif Crops"]
-    else:
-        primary_crops = [c["crop"] for c in seasonal_crops]
+        primary_crops = district.get("primary_crops") if district else None
+        if not primary_crops:
+            primary_crops = ["Cotton", "Soybean", "Pigeon Pea", "Bajra"]
+        
+        fallback_crops = []
+        # Seed random to ensure consistency per district
+        fallback_rand = random.Random(sum(ord(c) for c in district_name))
+        for crop in primary_crops:
+            fallback_crops.append({
+                "crop": crop,
+                "type": "Kharif" if current_season == "Kharif" else "Rabi",
+                "avg_yield": round(fallback_rand.uniform(1.2, 4.5), 2),
+                "area_ha": int(fallback_rand.randint(15000, 85000))
+            })
+        seasonal_crops = fallback_crops
+
+    primary_crops = [c["crop"] for c in seasonal_crops]
 
     # 1. Deterministic/Heuristic calculations
     seed_val = sum(ord(c) for c in district_name)

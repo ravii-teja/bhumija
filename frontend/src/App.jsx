@@ -47,6 +47,18 @@ export default function App() {
   }, [isMobile]);
 
   useEffect(() => {
+    const handleQueryEvent = () => {
+      setActiveTab('farmer');
+      setMobileTab('assistant');
+      setPanelOpen(true);
+    };
+    window.addEventListener('bhumija-query-assistant', handleQueryEvent);
+    return () => {
+      window.removeEventListener('bhumija-query-assistant', handleQueryEvent);
+    };
+  }, []);
+
+  useEffect(() => {
     async function bootstrap() {
       try {
         const [districtRes, configRes, agroOverlayRes] = await Promise.all([
@@ -96,8 +108,12 @@ export default function App() {
     setLoadingWeather(true);
     setLoadingAgro(true);
 
+    // Switch to Governance tab immediately
+    setActiveTab('governance');
+    setPanelOpen(true);
+
     if (isMobile) {
-      setMobileTab('map');
+      setMobileTab('governance');
     }
 
     // Save query/location to Supabase
@@ -167,8 +183,6 @@ export default function App() {
           selectedLocation={selectedLocation}
           onSelectLocation={handleSelectLocation}
           agroMetrics={agroMetrics}
-          overlayMode={overlayMode}
-          onOverlayModeChange={setOverlayMode}
           weather={weather}
           agroData={agroData}
           loadingWeather={loadingWeather}
@@ -209,7 +223,7 @@ export default function App() {
               className="absolute z-40 flex h-10 w-10 items-center justify-center rounded-full border border-stone-200 bg-white shadow-lg transition hover:bg-stone-50"
               style={{
                 top: 'calc(0.75rem + env(safe-area-inset-top, 0px))',
-                right: panelOpen ? 'calc(min(100%, 480px) + 0.75rem)' : '0.75rem',
+                right: panelOpen ? 'calc(min(100%, 560px) + 0.75rem)' : '0.75rem',
               }}
               aria-label={panelOpen ? 'Hide assistant' : 'Show assistant'}
             >
@@ -217,12 +231,23 @@ export default function App() {
             </button>
 
             <aside
-              className={`absolute bottom-0 right-0 top-0 z-30 flex w-[min(100%,480px)] flex-col border-l border-stone-200/90 bg-white shadow-2xl transition-transform duration-300 ease-out ${
+              className={`absolute bottom-0 right-0 top-0 z-30 flex w-[min(100%,560px)] flex-col border-l border-stone-200/90 bg-white shadow-2xl transition-transform duration-300 ease-out ${
                 panelOpen ? 'translate-x-0' : 'translate-x-full'
               }`}
             >
               <div className="shrink-0 border-b border-stone-200 bg-white p-2">
                 <div className="flex rounded-lg bg-stone-100 p-1">
+                  {selectedLocation && (
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('governance')}
+                      className={`flex-1 rounded-md py-1.5 text-center text-xs font-semibold transition ${
+                        activeTab === 'governance' ? 'bg-white text-stone-900 shadow-sm' : 'text-stone-500 hover:text-stone-950'
+                      }`}
+                    >
+                      Governance
+                    </button>
+                  )}
                   <button
                     type="button"
                     onClick={() => setActiveTab('farmer')}
@@ -232,19 +257,10 @@ export default function App() {
                   >
                     Farmer Advisory
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('governance')}
-                    className={`flex-1 rounded-md py-1.5 text-center text-xs font-semibold transition ${
-                      activeTab === 'governance' ? 'bg-white text-stone-900 shadow-sm' : 'text-stone-500 hover:text-stone-950'
-                    }`}
-                  >
-                    Governance
-                  </button>
                 </div>
               </div>
               <div className="min-h-0 flex-1 overflow-hidden">
-                {activeTab === 'farmer' ? assistantPanel : governancePanel}
+                {activeTab === 'governance' ? governancePanel : assistantPanel}
               </div>
             </aside>
           </>
@@ -253,7 +269,7 @@ export default function App() {
 
       {isMobile && (
         <>
-          <MobileNavBar active={mobileTab} onChange={setMobileTab} />
+          <MobileNavBar active={mobileTab} onChange={setMobileTab} showGovernance={!!selectedLocation} />
           <BottomSheet
             open={mobileTab === 'assistant'}
             onClose={() => setMobileTab('map')}

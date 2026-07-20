@@ -50,3 +50,13 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #a8a29e;
 }
+
+/* Hide MapMyIndia default 3D and zoom controls */
+a.map-zoom-in,
+a.map-zoom-out,
+a[title="Compass"],
+a[alt="Compass"],
+.mapboxgl-ctrl-group,
+.mappls-ctrl-zoom {
+  display: none !important;
+}
