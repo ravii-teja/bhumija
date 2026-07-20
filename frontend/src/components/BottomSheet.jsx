@@ -46,7 +46,7 @@ export default function BottomSheet({ open, onClose, title, subtitle, children, 
             </button>
           </div>
         </div>
-        <div className="min-h-0 flex-1 overflow-hidden">{children}</div>
+        <div className="min-h-0 flex-1 overflow-y-auto">{children}</div>
       </div>
     </div>
   );

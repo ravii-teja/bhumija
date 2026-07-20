@@ -315,39 +315,7 @@ export default function MapLocationMetrics({
         </div>
       </div>
 
-      {/* Action Buttons */}
-      <div className="mt-3 flex flex-wrap gap-2">
-        <button
-          onClick={() => handleAskAI(
-            activeMetric,
-            activeMetric === 'Monsoon' ? (monsoon?.accumulated_rainfall_365d_mm ?? monsoon?.accumulated_rainfall_90d_mm) :
-            activeMetric === 'Soil' ? soil?.moisture_percent :
-            activeMetric === 'Weather' ? weather?.temperature :
-            activeMetric === 'Vegetation' ? vegetation?.ndvi :
-            activeMetric === 'Forecast' ? monsoon?.forecast_rainfall_72h_mm :
-            activeMetric === 'Crops' ? district?.primary_crops?.[0] : '',
-            activeMetric === 'Monsoon' ? (monsoon?.yearly_status ?? monsoon?.status) :
-            activeMetric === 'Soil' ? (district?.soil_type ?? soil?.source) :
-            activeMetric === 'Weather' ? weather?.description :
-            activeMetric === 'Vegetation' ? vegetation?.health :
-            activeMetric === 'Forecast' ? 'Next 72 hours' :
-            activeMetric === 'Crops' ? 'Primary crop' : ''
-          )}
-          className="flex items-center gap-1 rounded-xl bg-brand-600 px-2.5 py-1.5 text-[11px] font-bold text-white shadow-sm hover:bg-brand-700 active:scale-95 transition-all"
-        >
-          <Sparkles className="h-3 w-3" />
-          Ask Agronomist AI
-        </button>
-        
-        <button
-          onClick={() => {
-            alert(`Guidance checklist updated for ${activeMetric}! Check the Governance tab.`);
-          }}
-          className="rounded-xl border border-stone-200 bg-white px-2.5 py-1.5 text-[11px] font-bold text-stone-700 hover:bg-stone-50 active:scale-95 transition-all"
-        >
-          Add to Checklist
-        </button>
-      </div>
+
     </div>
   );
 

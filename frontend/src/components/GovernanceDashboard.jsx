@@ -141,7 +141,19 @@ export default function GovernanceDashboard({
         {/* KPI Cards Grid */}
         <div className="grid grid-cols-3 gap-2.5">
           {/* El Niño Prediction Loss KPI */}
-          <div className="group relative rounded-2xl border border-stone-200/90 bg-white p-3 shadow-sm transition hover:shadow-md cursor-help">
+          <div
+            onClick={() => {
+              const confirm = window.confirm(
+                "CITATION & CALCULATION METADATA\n\n" +
+                "• Reference Source: Ministry of Agriculture & Farmers Welfare (Drought Damage Assessments) and India Data Portal (APY Dataset).\n" +
+                "• Source Link: https://indiadataportal.com/p/area-production-yield-apy\n\n" +
+                "• Calculation Logic: Impacted Farmers (" + data.impacted_farmers.toLocaleString() + ") × Avg. baseline crop value loss (₹" + (data.risk_level === 'High' ? '40,000–60,000' : data.risk_level === 'Medium' ? '30,000–40,000' : '20,000–30,000') + " per unit) without water contingency.\n\n" +
+                "Would you like to open the verified data source link?"
+              );
+              if (confirm) window.open('https://indiadataportal.com/p/area-production-yield-apy', '_blank');
+            }}
+            className="group relative rounded-2xl border border-stone-200/90 bg-white p-3 shadow-sm transition hover:shadow-md cursor-pointer hover:bg-stone-50 active:scale-98 transition-all"
+          >
             <div className="flex items-center gap-1 text-[8.5px] font-extrabold uppercase tracking-wider text-stone-500">
               <AlertTriangle className="h-3.5 w-3.5 text-red-600" />
               El Niño Predicted Loss
@@ -165,7 +177,19 @@ export default function GovernanceDashboard({
           </div>
 
           {/* Potential Savings KPI */}
-          <div className="group relative rounded-2xl border border-stone-200/90 bg-white p-3 shadow-sm transition hover:shadow-md cursor-help">
+          <div
+            onClick={() => {
+              const confirm = window.confirm(
+                "CITATION & CALCULATION METADATA\n\n" +
+                "• Reference Source: CRIDA (Central Research Institute for Dryland Agriculture) guidelines on early crop-switching.\n" +
+                "• Source Link: https://indiadataportal.com/p/area-production-yield-apy\n\n" +
+                "• Calculation Logic: Impacted Farmers (" + data.impacted_farmers.toLocaleString() + ") × Avg. savings per farmer (₹" + (data.risk_level === 'High' ? '18,000' : data.risk_level === 'Medium' ? '15,000' : '10,000') + " base adjusted for rainfall deficit) via crop seed subsidies & moisture conservation.\n\n" +
+                "Would you like to open the verified data source link?"
+              );
+              if (confirm) window.open('https://indiadataportal.com/p/area-production-yield-apy', '_blank');
+            }}
+            className="group relative rounded-2xl border border-stone-200/90 bg-white p-3 shadow-sm transition hover:shadow-md cursor-pointer hover:bg-stone-50 active:scale-98 transition-all"
+          >
             <div className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-stone-500">
               <TrendingUp className="h-3.5 w-3.5 text-emerald-600" />
               Est. Savings
@@ -189,7 +213,19 @@ export default function GovernanceDashboard({
           </div>
 
           {/* Impacted Farmers KPI */}
-          <div className="group relative rounded-2xl border border-stone-200/90 bg-white p-3 shadow-sm transition hover:shadow-md cursor-help">
+          <div
+            onClick={() => {
+              const confirm = window.confirm(
+                "CITATION & CALCULATION METADATA\n\n" +
+                "• Reference Source: India Data Portal (Area, Production, and Yield) and Ministry of Agriculture smallholder vulnerability reports.\n" +
+                "• Source Link: https://indiadataportal.com/p/area-production-yield-apy\n\n" +
+                "• Calculation Logic: District Farmer Base × Vulnerability Risk Factor (" + (data.risk_level === 'High' ? '35-55%' : data.risk_level === 'Medium' ? '15-35%' : '5-15%') + ") × Rain Deficit Multiplier.\n\n" +
+                "Would you like to open the verified data source link?"
+              );
+              if (confirm) window.open('https://indiadataportal.com/p/area-production-yield-apy', '_blank');
+            }}
+            className="group relative rounded-2xl border border-stone-200/90 bg-white p-3 shadow-sm transition hover:shadow-md cursor-pointer hover:bg-stone-50 active:scale-98 transition-all"
+          >
             <div className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-stone-500">
               <Users className="h-3.5 w-3.5 text-blue-600" />
               Impacted Farms
