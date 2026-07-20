@@ -252,7 +252,7 @@ export default function MapComponent({
           const circle = new window.mappls.Circle({
             map,
             center: { lat, lng: lon },
-            radius: 42000,
+            radius: 12000,
             strokeColor: colors.stroke,
             strokeOpacity: 0.95,
             strokeWeight: 1.5,
@@ -282,7 +282,7 @@ export default function MapComponent({
           const circle = new window.mappls.Circle({
             map,
             center: { lat, lng: lon },
-            radius: 42000,
+            radius: 12000,
             strokeColor: '#f97316',
             strokeOpacity: 0.95,
             strokeWeight: 1.5,
